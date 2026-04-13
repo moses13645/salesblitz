@@ -1,0 +1,57 @@
+import { useParams, Link } from "react-router-dom";
+import { useBU, useSalespeople, useTargets, useActivityLogs } from "@/hooks/useBUData";
+import { TeamProgress } from "@/components/TeamProgress";
+import { Leaderboard } from "@/components/Leaderboard";
+import { LogActivity } from "@/components/LogActivity";
+import { ManageTeam } from "@/components/ManageTeam";
+import { ArrowLeft, Zap } from "lucide-react";
+
+export default function BUDashboard() {
+  const { slug } = useParams<{ slug: string }>();
+  const { data: bu, isLoading } = useBU(slug || "");
+  const { data: salespeople = [] } = useSalespeople(bu?.id);
+  const { data: targets = [] } = useTargets(bu?.id);
+  const { data: activityLogs = [] } = useActivityLogs(bu?.id);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse font-display text-lg text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!bu) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground">Business Unit not found.</p>
+        <Link to="/" className="text-primary underline">Go back</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-warning" />
+              <h1 className="font-display font-bold text-xl text-foreground">{bu.name}</h1>
+            </div>
+          </div>
+          <ManageTeam buId={bu.id} salespeople={salespeople} targets={targets} />
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <TeamProgress targets={targets} activityLogs={activityLogs} />
+        <LogActivity buId={bu.id} salespeople={salespeople} />
+        <Leaderboard salespeople={salespeople} activityLogs={activityLogs} targets={targets} />
+      </main>
+    </div>
+  );
+}
