@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           bu_id: string
           count: number
+          fields_data: Json | null
           id: string
           logged_at: string
           metric: string
@@ -27,6 +28,7 @@ export type Database = {
         Insert: {
           bu_id: string
           count?: number
+          fields_data?: Json | null
           id?: string
           logged_at?: string
           metric: string
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           bu_id?: string
           count?: number
+          fields_data?: Json | null
           id?: string
           logged_at?: string
           metric?: string
@@ -128,6 +131,7 @@ export type Database = {
         Row: {
           bu_id: string
           created_at: string
+          custom_fields: Json | null
           id: string
           metric: string
           points_per_unit: number
@@ -137,6 +141,7 @@ export type Database = {
         Insert: {
           bu_id: string
           created_at?: string
+          custom_fields?: Json | null
           id?: string
           metric: string
           points_per_unit?: number
@@ -146,6 +151,7 @@ export type Database = {
         Update: {
           bu_id?: string
           created_at?: string
+          custom_fields?: Json | null
           id?: string
           metric?: string
           points_per_unit?: number
