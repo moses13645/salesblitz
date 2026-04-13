@@ -63,7 +63,7 @@ export default function BUDashboard() {
         <JoinTeam buId={bu.id} />
         <LogActivity buId={bu.id} salespeople={salespeople} targets={targets} />
         <Leaderboard salespeople={salespeople} activityLogs={activityLogs} targets={targets} />
-      </main>
+        <ActivityFeed activityLogs={activityLogs} salespeople={salespeople} />
     </div>
   );
 }
