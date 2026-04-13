@@ -19,30 +19,30 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 30% 10%;
 
-    --primary: 145 65% 42%;
+    --primary: 349 75% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 90%;
-    --secondary-foreground: 220 30% 10%;
+    --secondary: 248 53% 38%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 220 14% 94%;
     --muted-foreground: 220 10% 46%;
 
-    --accent: 30 90% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 100% 63%;
+    --accent-foreground: 220 30% 10%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 349 75% 45%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 88%;
     --input: 220 13% 88%;
-    --ring: 145 65% 42%;
+    --ring: 349 75% 45%;
 
     --radius: 0.75rem;
 
     --success: 145 65% 42%;
-    --warning: 30 90% 55%;
-    --info: 210 80% 55%;
+    --warning: 45 100% 63%;
+    --info: 248 53% 38%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
