@@ -5,6 +5,7 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { LogActivity } from "@/components/LogActivity";
 import { ManageTeam } from "@/components/ManageTeam";
 import { ActivityFeed } from "@/components/ActivityFeed";
+import { SessionTimer } from "@/components/SessionTimer";
 import { ArrowLeft, Zap, Target, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportBUToExcel } from "@/lib/exportBU";
@@ -47,6 +48,11 @@ export default function BUDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <SessionTimer
+              buId={bu.id}
+              durationMinutes={(bu as any).session_duration_minutes ?? null}
+              startedAt={(bu as any).session_started_at ?? null}
+            />
             <Button
               variant="outline"
               size="sm"
@@ -56,7 +62,7 @@ export default function BUDashboard() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
+            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} sessionDurationMinutes={(bu as any).session_duration_minutes ?? null} salespeople={salespeople} targets={targets} />
           </div>
         </div>
       </header>
