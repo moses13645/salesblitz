@@ -133,8 +133,23 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
                       copy[i] = { ...copy[i], value: e.target.value };
                       setMetrics(copy);
                     }}
-                    className="w-24"
+                    className="w-20"
                   />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="Pts"
+                      value={m.points}
+                      onChange={(e) => {
+                        const copy = [...metrics];
+                        copy[i] = { ...copy[i], points: e.target.value };
+                        setMetrics(copy);
+                      }}
+                      className="w-16"
+                    />
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">pts</span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
