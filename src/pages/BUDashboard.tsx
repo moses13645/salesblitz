@@ -61,7 +61,7 @@ export default function BUDashboard() {
         )}
         <TeamProgress targets={targets} activityLogs={activityLogs} />
         <JoinTeam buId={bu.id} />
-        <LogActivity buId={bu.id} salespeople={salespeople} targets={targets} />
+        <LogActivity buId={bu.id} salespeople={salespeople} targets={targets} activityLogs={activityLogs} />
         <Leaderboard salespeople={salespeople} activityLogs={activityLogs} targets={targets} />
         <ActivityFeed activityLogs={activityLogs} salespeople={salespeople} />
       </main>

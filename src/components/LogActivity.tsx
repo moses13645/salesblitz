@@ -12,9 +12,25 @@ interface LogActivityProps {
   buId: string;
   salespeople: { id: string; name: string }[];
   targets: { metric: string; salesperson_id: string | null; target_value: number }[];
+  activityLogs: { metric: string; count: number }[];
 }
 
-export function LogActivity({ buId, salespeople, targets }: LogActivityProps) {
+function fireFireworks() {
+  const duration = 2000;
+  const end = Date.now() + duration;
+  const interval = setInterval(() => {
+    if (Date.now() > end) return clearInterval(interval);
+    confetti({
+      particleCount: 30,
+      startVelocity: 30,
+      spread: 360,
+      origin: { x: Math.random(), y: Math.random() * 0.4 },
+      colors: ["#ff0", "#f0f", "#0ff", "#ff6600", "#00ff00"],
+    });
+  }, 150);
+}
+
+export function LogActivity({ buId, salespeople, targets, activityLogs }: LogActivityProps) {
   const metrics = getMetricsFromTargets(targets);
   const [selectedPerson, setSelectedPerson] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<string>(metrics[0]?.key || "");
@@ -46,7 +62,23 @@ export function LogActivity({ buId, salespeople, targets }: LogActivityProps) {
       const metricLabel = metrics.find((m) => m.key === selectedMetric)?.label || selectedMetric;
       toast({ title: `✓ ${metricLabel} enregistré !` });
       setNote("");
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+
+      // Check if this metric just hit its target
+      const teamTarget = targets.find((t) => !t.salesperson_id && t.metric === selectedMetric);
+      if (teamTarget && teamTarget.target_value > 0) {
+        const currentTotal = activityLogs
+          .filter((l) => l.metric === selectedMetric)
+          .reduce((s, l) => s + l.count, 0) + 1; // +1 for the one just logged
+        if (currentTotal >= teamTarget.target_value) {
+          fireFireworks();
+          toast({ title: `🎆 Objectif "${metricLabel}" atteint !` });
+        } else {
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+        }
+      } else {
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+      }
+
       qc.invalidateQueries({ queryKey: ["activity_logs", buId] });
     }
   };
