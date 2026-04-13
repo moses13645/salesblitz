@@ -18,7 +18,7 @@ interface ManageTeamProps {
   buId: string;
   sessionObjective: string | null;
   salespeople: { id: string; name: string }[];
-  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number }[];
+  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number }[];
 }
 
 export function ManageTeam({ buId, sessionObjective, salespeople, targets }: ManageTeamProps) {
