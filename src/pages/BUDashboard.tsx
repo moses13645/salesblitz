@@ -5,7 +5,7 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { LogActivity } from "@/components/LogActivity";
 import { ManageTeam } from "@/components/ManageTeam";
 import { ActivityFeed } from "@/components/ActivityFeed";
-import { JoinTeam } from "@/components/JoinTeam";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { ArrowLeft, Zap, Target } from "lucide-react";
 
 export default function BUDashboard() {
