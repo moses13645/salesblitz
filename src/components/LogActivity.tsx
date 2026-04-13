@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import confetti from "canvas-confetti";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getMetricsFromTargets } from "@/lib/metrics";
 import { toast } from "@/hooks/use-toast";
