@@ -165,7 +165,7 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
               variant="outline"
               size="sm"
               className="mt-2"
-              onClick={() => setMetrics([...metrics, { name: "", value: "" }])}
+              onClick={() => setMetrics([...metrics, { name: "", value: "", points: "1" }])}
             >
               <Plus className="h-4 w-4 mr-1" /> Add metric
             </Button>
