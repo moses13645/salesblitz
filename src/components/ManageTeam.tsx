@@ -20,7 +20,7 @@ interface ManageTeamProps {
   sessionDurationMinutes: number | null;
   sessionPhases: { name: string; durationMinutes: number }[] | null;
   salespeople: { id: string; name: string }[];
-  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number; custom_fields?: { name: string; type: string; required: boolean }[] | null }[];
+  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number; custom_fields?: any }[];
 }
 
 export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sessionPhases, salespeople, targets }: ManageTeamProps) {
@@ -252,7 +252,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
               variant="outline"
               size="sm"
               className="mt-2"
-              onClick={() => setMetrics([...metrics, { name: "", value: "", points: "1" }])}
+              onClick={() => setMetrics([...metrics, { name: "", value: "", points: "1", fields: [] }])}
             >
               <Plus className="h-4 w-4 mr-1" /> Add metric
             </Button>
