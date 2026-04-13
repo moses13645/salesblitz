@@ -14,7 +14,140 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          bu_id: string
+          count: number
+          id: string
+          logged_at: string
+          metric: string
+          salesperson_id: string
+        }
+        Insert: {
+          bu_id: string
+          count?: number
+          id?: string
+          logged_at?: string
+          metric: string
+          salesperson_id: string
+        }
+        Update: {
+          bu_id?: string
+          count?: number
+          id?: string
+          logged_at?: string
+          metric?: string
+          salesperson_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_bu_id_fkey"
+            columns: ["bu_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_salesperson_id_fkey"
+            columns: ["salesperson_id"]
+            isOneToOne: false
+            referencedRelation: "salespeople"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_units: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      salespeople: {
+        Row: {
+          bu_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          bu_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          bu_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salespeople_bu_id_fkey"
+            columns: ["bu_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      targets: {
+        Row: {
+          bu_id: string
+          created_at: string
+          id: string
+          metric: string
+          salesperson_id: string | null
+          target_value: number
+        }
+        Insert: {
+          bu_id: string
+          created_at?: string
+          id?: string
+          metric: string
+          salesperson_id?: string | null
+          target_value?: number
+        }
+        Update: {
+          bu_id?: string
+          created_at?: string
+          id?: string
+          metric?: string
+          salesperson_id?: string | null
+          target_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "targets_bu_id_fkey"
+            columns: ["bu_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "targets_salesperson_id_fkey"
+            columns: ["salesperson_id"]
+            isOneToOne: false
+            referencedRelation: "salespeople"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
