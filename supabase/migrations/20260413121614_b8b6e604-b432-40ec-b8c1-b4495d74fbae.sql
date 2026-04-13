@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can delete targets" ON public.targets FOR DELETE USING (true);

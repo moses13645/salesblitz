@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { METRICS } from "@/lib/metrics";
+import { getMetricsFromTargets } from "@/lib/metrics";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { ArrowRight, Building2, Crown, Zap } from "lucide-react";
@@ -59,8 +59,11 @@ export default function HQDashboard() {
 
   const isLoading = bus.isLoading || salespeople.isLoading || targets.isLoading || logs.isLoading;
 
+  // Collect all unique metrics across all BUs
+  const allMetrics = getMetricsFromTargets(allTargets);
+
   // Global totals
-  const globalTotals = METRICS.map((m) => {
+  const globalTotals = allMetrics.map((m) => {
     const current = allLogs
       .filter((l) => l.metric === m.key)
       .reduce((sum, l) => sum + l.count, 0);
@@ -75,8 +78,9 @@ export default function HQDashboard() {
     const buLogs = allLogs.filter((l) => l.bu_id === bu.id);
     const buTargets = allTargets.filter((t) => t.bu_id === bu.id && !t.salesperson_id);
     const buPeople = allSalespeople.filter((sp) => sp.bu_id === bu.id);
+    const buMetrics = getMetricsFromTargets(buTargets);
 
-    const metrics = METRICS.map((m) => {
+    const metrics = buMetrics.map((m) => {
       const current = buLogs.filter((l) => l.metric === m.key).reduce((s, l) => s + l.count, 0);
       const target = buTargets.find((t) => t.metric === m.key)?.target_value || 0;
       return { ...m, current, target };
@@ -116,7 +120,7 @@ export default function HQDashboard() {
         {/* Global totals */}
         <div>
           <h2 className="font-display font-semibold text-foreground mb-3">Global Progress</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className={`grid gap-4 ${globalTotals.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
             {globalTotals.map(({ key, label, icon: Icon, color, current, target }) => {
               const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
               return (
@@ -168,7 +172,10 @@ export default function HQDashboard() {
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  {bu.session_objective && (
+                    <p className="text-xs text-muted-foreground mb-3 italic line-clamp-1">{bu.session_objective}</p>
+                  )}
+                  <div className={`grid gap-3 ${bu.metrics.length <= 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     {bu.metrics.map((m) => {
                       const pct = m.target > 0 ? Math.min((m.current / m.target) * 100, 100) : 0;
                       return (

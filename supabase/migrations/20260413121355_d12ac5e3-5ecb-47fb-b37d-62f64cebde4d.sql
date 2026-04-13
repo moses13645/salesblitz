@@ -1,0 +1,1 @@
+ALTER TABLE public.business_units ADD COLUMN session_objective text;

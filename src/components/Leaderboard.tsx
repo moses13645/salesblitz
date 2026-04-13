@@ -1,4 +1,4 @@
-import { METRICS, MetricType } from "@/lib/metrics";
+import { getMetricsFromTargets } from "@/lib/metrics";
 import { Trophy } from "lucide-react";
 
 interface LeaderboardProps {
@@ -8,17 +8,19 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardProps) {
+  const metrics = getMetricsFromTargets(targets);
+
   const totals = salespeople.map((sp) => {
     const spLogs = activityLogs.filter((l) => l.salesperson_id === sp.id);
     const byMetric: Record<string, number> = {};
     spLogs.forEach((l) => {
       byMetric[l.metric] = (byMetric[l.metric] || 0) + l.count;
     });
-    const totalCalls = byMetric["calls"] || 0;
-    return { ...sp, byMetric, totalCalls };
+    const totalFirst = byMetric[metrics[0]?.key] || 0;
+    return { ...sp, byMetric, totalFirst };
   });
 
-  totals.sort((a, b) => b.totalCalls - a.totalCalls);
+  totals.sort((a, b) => b.totalFirst - a.totalFirst);
 
   return (
     <div className="rounded-lg bg-card border border-border shadow-sm overflow-hidden">
@@ -32,7 +34,7 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
             <tr className="border-b border-border bg-muted/50">
               <th className="text-left p-3 font-medium text-muted-foreground">#</th>
               <th className="text-left p-3 font-medium text-muted-foreground">Name</th>
-              {METRICS.map((m) => (
+              {metrics.map((m) => (
                 <th key={m.key} className="text-center p-3 font-medium text-muted-foreground">
                   {m.label}
                 </th>
@@ -44,7 +46,7 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
               <tr key={sp.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                 <td className="p-3 font-display font-bold text-muted-foreground">{i + 1}</td>
                 <td className="p-3 font-medium text-foreground">{sp.name}</td>
-                {METRICS.map((m) => {
+                {metrics.map((m) => {
                   const val = sp.byMetric[m.key] || 0;
                   const target = targets.find(
                     (t) => t.salesperson_id === sp.id && t.metric === m.key
@@ -62,8 +64,8 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
             ))}
             {totals.length === 0 && (
               <tr>
-                <td colSpan={2 + METRICS.length} className="p-6 text-center text-muted-foreground">
-                  No salespeople yet. Add your team below!
+                <td colSpan={2 + metrics.length} className="p-6 text-center text-muted-foreground">
+                  No salespeople yet. Join the team!
                 </td>
               </tr>
             )}
