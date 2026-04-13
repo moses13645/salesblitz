@@ -5,7 +5,6 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { LogActivity } from "@/components/LogActivity";
 import { ManageTeam } from "@/components/ManageTeam";
 import { ActivityFeed } from "@/components/ActivityFeed";
-import { JoinTeam } from "@/components/JoinTeam";
 import { ArrowLeft, Zap, Target } from "lucide-react";
 
 export default function BUDashboard() {
@@ -60,7 +59,7 @@ export default function BUDashboard() {
           </div>
         )}
         <TeamProgress targets={targets} activityLogs={activityLogs} />
-        <JoinTeam buId={bu.id} />
+        
         <LogActivity buId={bu.id} salespeople={salespeople} targets={targets} activityLogs={activityLogs} />
         <Leaderboard salespeople={salespeople} activityLogs={activityLogs} targets={targets} />
         <ActivityFeed activityLogs={activityLogs} salespeople={salespeople} />
