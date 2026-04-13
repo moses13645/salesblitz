@@ -16,7 +16,7 @@ export function getMetricsFromTargets(
   targets: { metric: string; salesperson_id: string | null }[]
 ): MetricDef[] {
   const teamMetrics = [...new Set(targets.filter((t) => !t.salesperson_id).map((t) => t.metric))];
-  if (teamMetrics.length === 0) return DEFAULT_METRICS;
+  if (teamMetrics.length === 0) return [];
 
   return teamMetrics.map((key, i) => {
     const def = DEFAULT_METRICS.find((d) => d.key === key);
