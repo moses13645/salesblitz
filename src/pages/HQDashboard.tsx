@@ -7,7 +7,8 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { ArrowRight, Building2, Crown, Zap, Plus, Copy } from "lucide-react";
+import { ArrowRight, Building2, Crown, Zap, Plus, Copy, Download } from "lucide-react";
+import { exportHQToExcel } from "@/lib/exportBU";
 
 function useHQData() {
   const bus = useQuery({
@@ -130,7 +131,18 @@ export default function HQDashboard() {
               <span className="font-display font-semibold text-foreground">HQ Dashboard</span>
             </div>
           </div>
-          <span className="text-xs text-muted-foreground">{allBus.length} BUs · {allSalespeople.length} reps</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">{allBus.length} BUs · {allSalespeople.length} reps</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportHQToExcel(allBus, allSalespeople, allTargets, allLogs)}
+              className="gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
         </div>
       </header>
 
