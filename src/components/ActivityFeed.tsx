@@ -8,7 +8,7 @@ interface ActivityFeedProps {
     count: number;
     logged_at: string;
     note?: string | null;
-    fields_data?: Record<string, any> | null;
+    fields_data?: any;
   }[];
   salespeople: { id: string; name: string }[];
 }
