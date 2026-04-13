@@ -46,6 +46,7 @@ export function LogActivity({ buId, salespeople, targets }: LogActivityProps) {
       const metricLabel = metrics.find((m) => m.key === selectedMetric)?.label || selectedMetric;
       toast({ title: `✓ ${metricLabel} enregistré !` });
       setNote("");
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
       qc.invalidateQueries({ queryKey: ["activity_logs", buId] });
     }
   };
