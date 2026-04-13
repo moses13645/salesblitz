@@ -1,4 +1,4 @@
-import { METRICS, MetricType } from "@/lib/metrics";
+import { getMetricsFromTargets, MetricDef } from "@/lib/metrics";
 import { Progress } from "@/components/ui/progress";
 
 interface TeamProgressProps {
@@ -7,6 +7,7 @@ interface TeamProgressProps {
 }
 
 export function TeamProgress({ targets, activityLogs }: TeamProgressProps) {
+  const metrics = getMetricsFromTargets(targets);
   const teamTargets = targets.filter((t) => !t.salesperson_id);
   const totalsByMetric = activityLogs.reduce<Record<string, number>>((acc, log) => {
     acc[log.metric] = (acc[log.metric] || 0) + log.count;
@@ -14,8 +15,8 @@ export function TeamProgress({ targets, activityLogs }: TeamProgressProps) {
   }, {});
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {METRICS.map(({ key, label, icon: Icon, color }) => {
+    <div className={`grid gap-4 ${metrics.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+      {metrics.map(({ key, label, icon: Icon, color }) => {
         const target = teamTargets.find((t) => t.metric === key);
         const current = totalsByMetric[key] || 0;
         const targetVal = target?.target_value || 0;

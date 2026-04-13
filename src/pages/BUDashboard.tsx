@@ -5,7 +5,7 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { LogActivity } from "@/components/LogActivity";
 import { ManageTeam } from "@/components/ManageTeam";
 import { JoinTeam } from "@/components/JoinTeam";
-import { ArrowLeft, Zap } from "lucide-react";
+import { ArrowLeft, Zap, Target } from "lucide-react";
 
 export default function BUDashboard() {
   const { slug } = useParams<{ slug: string }>();
@@ -44,14 +44,23 @@ export default function BUDashboard() {
               <h1 className="font-display font-bold text-xl text-foreground">{bu.name}</h1>
             </div>
           </div>
-          <ManageTeam buId={bu.id} salespeople={salespeople} targets={targets} />
+          <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        {bu.session_objective && (
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-3">
+            <Target className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-primary mb-1">Session Objective</p>
+              <p className="text-sm text-foreground">{bu.session_objective}</p>
+            </div>
+          </div>
+        )}
         <TeamProgress targets={targets} activityLogs={activityLogs} />
         <JoinTeam buId={bu.id} />
-        <LogActivity buId={bu.id} salespeople={salespeople} />
+        <LogActivity buId={bu.id} salespeople={salespeople} targets={targets} />
         <Leaderboard salespeople={salespeople} activityLogs={activityLogs} targets={targets} />
       </main>
     </div>
