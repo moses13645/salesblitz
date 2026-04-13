@@ -20,7 +20,7 @@ export function TeamProgress({ targets, activityLogs }: TeamProgressProps) {
         const target = teamTargets.find((t) => t.metric === key);
         const current = totalsByMetric[key] || 0;
         const targetVal = target?.target_value || 0;
-        const pct = targetVal > 0 ? Math.min((current / targetVal) * 100, 100) : 0;
+        const pct = targetVal > 0 ? (current / targetVal) * 100 : 0;
 
         return (
           <div key={key} className="rounded-lg bg-card p-5 shadow-sm border border-border">
@@ -40,8 +40,8 @@ export function TeamProgress({ targets, activityLogs }: TeamProgressProps) {
             </div>
             {targetVal > 0 && (
               <div>
-                <Progress value={pct} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-1">{Math.round(pct)}% of target</p>
+                <Progress value={Math.min(pct, 100)} className="h-2" />
+                <p className={`text-xs mt-1 ${pct >= 100 ? "text-primary font-semibold" : "text-muted-foreground"}`}>{Math.round(pct)}% of target</p>
               </div>
             )}
           </div>
