@@ -66,17 +66,6 @@ export default function HQDashboard() {
 
   const isLoading = bus.isLoading || salespeople.isLoading || targets.isLoading || logs.isLoading;
 
-  const allMetrics = getMetricsFromTargets(allTargets);
-
-  const globalTotals = allMetrics.map((m) => {
-    const current = allLogs
-      .filter((l) => l.metric === m.key)
-      .reduce((sum, l) => sum + l.count, 0);
-    const target = allTargets
-      .filter((t) => !t.salesperson_id && t.metric === m.key)
-      .reduce((sum, t) => sum + t.target_value, 0);
-    return { ...m, current, target };
-  });
 
   const buStats = allBus.map((bu) => {
     const buLogs = allLogs.filter((l) => l.bu_id === bu.id);
