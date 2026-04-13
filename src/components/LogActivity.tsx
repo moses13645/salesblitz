@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import confetti from "canvas-confetti";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getMetricsFromTargets } from "@/lib/metrics";
 import { toast } from "@/hooks/use-toast";
@@ -45,6 +46,7 @@ export function LogActivity({ buId, salespeople, targets }: LogActivityProps) {
       const metricLabel = metrics.find((m) => m.key === selectedMetric)?.label || selectedMetric;
       toast({ title: `✓ ${metricLabel} enregistré !` });
       setNote("");
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
       qc.invalidateQueries({ queryKey: ["activity_logs", buId] });
     }
   };
