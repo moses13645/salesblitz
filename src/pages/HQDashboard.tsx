@@ -165,40 +165,6 @@ export default function HQDashboard() {
           </div>
         </div>
 
-        {/* Global totals */}
-        {globalTotals.length > 0 && (
-          <div>
-            <h2 className="font-display font-semibold text-foreground mb-3">Global Progress</h2>
-            <div className={`grid gap-4 ${globalTotals.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-              {globalTotals.map(({ key, label, icon: Icon, color, current, target }) => {
-                const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
-                return (
-                  <div key={key} className="rounded-lg bg-card p-5 shadow-sm border border-border">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`rounded-md p-2 bg-muted ${color}`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                        <p className="text-2xl font-display font-bold text-foreground">
-                          {current}
-                          {target > 0 && <span className="text-sm font-normal text-muted-foreground"> / {target}</span>}
-                        </p>
-                      </div>
-                    </div>
-                    {target > 0 && (
-                      <div>
-                        <Progress value={pct} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-1">{Math.round(pct)}% of target</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Per-BU cards */}
         <div>
           <h2 className="font-display font-semibold text-foreground mb-3">Par Business Unit</h2>
