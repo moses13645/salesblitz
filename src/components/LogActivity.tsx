@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getMetricsFromTargets } from "@/lib/metrics";
 import { toast } from "@/hooks/use-toast";
 
+interface CustomField {
+  name: string;
+  type: string;
+  required: boolean;
+}
+
 interface LogActivityProps {
   buId: string;
   salespeople: { id: string; name: string }[];
-  targets: { metric: string; salesperson_id: string | null; target_value: number }[];
+  targets: { metric: string; salesperson_id: string | null; target_value: number; custom_fields?: any }[];
   activityLogs: { metric: string; count: number }[];
 }
 
@@ -20,15 +26,11 @@ function fireFireworks() {
   const end = Date.now() + duration;
   const colors = ["#CA1D34", "#FFD040", "#372E95", "#ff0", "#00ff88", "#ff6600", "#0ff", "#f0f"];
 
-  // Big initial burst from center
   confetti({ particleCount: 150, spread: 100, startVelocity: 45, origin: { x: 0.5, y: 0.5 }, colors });
   confetti({ particleCount: 100, spread: 160, startVelocity: 55, origin: { x: 0.5, y: 0.4 }, colors });
 
-  // Continuous explosions from random positions
   const interval = setInterval(() => {
     if (Date.now() > end) return clearInterval(interval);
-
-    // Two simultaneous bursts from different positions
     confetti({
       particleCount: 40 + Math.random() * 40,
       startVelocity: 25 + Math.random() * 30,
@@ -53,9 +55,21 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
   const metrics = getMetricsFromTargets(targets);
   const [selectedPerson, setSelectedPerson] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<string>(metrics[0]?.key || "");
-  const [note, setNote] = useState("");
+  const [fieldsValues, setFieldsValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const qc = useQueryClient();
+
+  // Get custom fields for the selected metric
+  const customFields: CustomField[] = useMemo(() => {
+    const target = targets.find((t) => !t.salesperson_id && t.metric === selectedMetric);
+    const cf = (target as any)?.custom_fields;
+    return Array.isArray(cf) ? cf : [];
+  }, [targets, selectedMetric]);
+
+  const handleMetricChange = (value: string) => {
+    setSelectedMetric(value);
+    setFieldsValues({});
+  };
 
   const handleSubmit = async () => {
     if (!selectedPerson) {
@@ -66,28 +80,49 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
       toast({ title: "Sélectionnez une métrique", variant: "destructive" });
       return;
     }
+
+    // Validate required custom fields
+    for (const f of customFields) {
+      if (f.required && !fieldsValues[f.name]?.trim()) {
+        toast({ title: `Le champ "${f.name}" est requis`, variant: "destructive" });
+        return;
+      }
+    }
+
+    // Build fields_data and note
+    const fieldsData = customFields.length > 0
+      ? Object.fromEntries(
+          customFields.map((f) => [f.name, f.type === "number" ? Number(fieldsValues[f.name] || 0) : (fieldsValues[f.name] || "").trim()])
+        )
+      : null;
+
+    // Legacy note = concatenation of field values for backward compat
+    const note = customFields.length > 0
+      ? customFields.map((f) => `${f.name}: ${fieldsValues[f.name] || ""}`).join(" | ")
+      : null;
+
     setLoading(true);
     const { error } = await supabase.from("activity_logs").insert({
       bu_id: buId,
       salesperson_id: selectedPerson,
       metric: selectedMetric,
       count: 1,
-      note: note.trim() || null,
-    });
+      note,
+      fields_data: fieldsData,
+    } as any);
     setLoading(false);
     if (error) {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     } else {
       const metricLabel = metrics.find((m) => m.key === selectedMetric)?.label || selectedMetric;
       toast({ title: `✓ ${metricLabel} enregistré !` });
-      setNote("");
+      setFieldsValues({});
 
-      // Check if this metric just hit its target
       const teamTarget = targets.find((t) => !t.salesperson_id && t.metric === selectedMetric);
       if (teamTarget && teamTarget.target_value > 0) {
         const currentTotal = activityLogs
           .filter((l) => l.metric === selectedMetric)
-          .reduce((s, l) => s + l.count, 0) + 1; // +1 for the one just logged
+          .reduce((s, l) => s + l.count, 0) + 1;
         if (currentTotal >= teamTarget.target_value) {
           fireFireworks();
           toast({ title: `🎆 Objectif "${metricLabel}" atteint !` });
@@ -123,7 +158,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
             </div>
             <div className="min-w-[130px]">
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Quoi ?</label>
-              <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+              <Select value={selectedMetric} onValueChange={handleMetricChange}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {metrics.map((m) => (
@@ -133,15 +168,37 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
               </Select>
             </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Commentaire (optionnel)</label>
-            <Input
-              placeholder="ex: Client Dupont, offre 12K€"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            />
-          </div>
+
+          {/* Dynamic custom fields */}
+          {customFields.length > 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {customFields.map((f) => (
+                <div key={f.name}>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    {f.name} {f.required && <span className="text-destructive">*</span>}
+                  </label>
+                  <Input
+                    type={f.type === "number" ? "number" : "text"}
+                    placeholder={f.name}
+                    value={fieldsValues[f.name] || ""}
+                    onChange={(e) => setFieldsValues({ ...fieldsValues, [f.name]: e.target.value })}
+                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Commentaire (optionnel)</label>
+              <Input
+                placeholder="ex: Client Dupont, offre 12K€"
+                value={fieldsValues["__note"] || ""}
+                onChange={(e) => setFieldsValues({ ...fieldsValues, __note: e.target.value })}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              />
+            </div>
+          )}
+
           <Button onClick={handleSubmit} disabled={loading} className="w-full">
             {loading ? "..." : "Enregistrer"}
           </Button>
