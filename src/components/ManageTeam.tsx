@@ -202,49 +202,123 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
                 <span className="w-9" />
               </div>
               {metrics.map((m, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Input
-                    placeholder="ex: clients contactés"
-                    value={m.name}
-                    onChange={(e) => {
-                      const copy = [...metrics];
-                      copy[i] = { ...copy[i], name: e.target.value };
-                      setMetrics(copy);
-                    }}
-                    className="flex-1"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    value={m.value}
-                    onChange={(e) => {
-                      const copy = [...metrics];
-                      copy[i] = { ...copy[i], value: e.target.value };
-                      setMetrics(copy);
-                    }}
-                    className="w-20"
-                  />
-                  <Input
-                    type="number"
-                    min={1}
-                    placeholder="1"
-                    value={m.points}
-                    onChange={(e) => {
-                      const copy = [...metrics];
-                      copy[i] = { ...copy[i], points: e.target.value };
-                      setMetrics(copy);
-                    }}
-                    className="w-[5.5rem]"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setMetrics(metrics.filter((_, j) => j !== i))}
-                    disabled={metrics.length <= 1}
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                <div key={i} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="ex: clients contactés"
+                      value={m.name}
+                      onChange={(e) => {
+                        const copy = [...metrics];
+                        copy[i] = { ...copy[i], name: e.target.value };
+                        setMetrics(copy);
+                      }}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="0"
+                      value={m.value}
+                      onChange={(e) => {
+                        const copy = [...metrics];
+                        copy[i] = { ...copy[i], value: e.target.value };
+                        setMetrics(copy);
+                      }}
+                      className="w-20"
+                    />
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="1"
+                      value={m.points}
+                      onChange={(e) => {
+                        const copy = [...metrics];
+                        copy[i] = { ...copy[i], points: e.target.value };
+                        setMetrics(copy);
+                      }}
+                      className="w-[5.5rem]"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMetrics(metrics.filter((_, j) => j !== i))}
+                      disabled={metrics.length <= 1}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                  {/* Custom fields config for this metric */}
+                  <div className="ml-4 pl-3 border-l-2 border-border space-y-1.5">
+                    {m.fields.map((f, fi) => (
+                      <div key={fi} className="flex items-center gap-2">
+                        <Input
+                          placeholder="Nom du champ (ex: Nom client)"
+                          value={f.name}
+                          onChange={(e) => {
+                            const copy = [...metrics];
+                            const fields = [...copy[i].fields];
+                            fields[fi] = { ...fields[fi], name: e.target.value };
+                            copy[i] = { ...copy[i], fields };
+                            setMetrics(copy);
+                          }}
+                          className="flex-1 h-8 text-xs"
+                        />
+                        <select
+                          value={f.type}
+                          onChange={(e) => {
+                            const copy = [...metrics];
+                            const fields = [...copy[i].fields];
+                            fields[fi] = { ...fields[fi], type: e.target.value };
+                            copy[i] = { ...copy[i], fields };
+                            setMetrics(copy);
+                          }}
+                          className="h-8 text-xs rounded-md border border-input bg-background px-2"
+                        >
+                          <option value="text">Texte</option>
+                          <option value="number">Nombre</option>
+                        </select>
+                        <label className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={f.required}
+                            onChange={(e) => {
+                              const copy = [...metrics];
+                              const fields = [...copy[i].fields];
+                              fields[fi] = { ...fields[fi], required: e.target.checked };
+                              copy[i] = { ...copy[i], fields };
+                              setMetrics(copy);
+                            }}
+                            className="rounded"
+                          />
+                          Requis
+                        </label>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => {
+                            const copy = [...metrics];
+                            copy[i] = { ...copy[i], fields: copy[i].fields.filter((_, j) => j !== fi) };
+                            setMetrics(copy);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-muted-foreground"
+                      onClick={() => {
+                        const copy = [...metrics];
+                        copy[i] = { ...copy[i], fields: [...copy[i].fields, { name: "", type: "text", required: true }] };
+                        setMetrics(copy);
+                      }}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Ajouter un champ
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
