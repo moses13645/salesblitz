@@ -29,10 +29,10 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
 
   // Build editable metrics from existing team targets
   const teamTargets = targets.filter((t) => !t.salesperson_id);
-  const [metrics, setMetrics] = useState<{ name: string; value: string }[]>(() =>
+  const [metrics, setMetrics] = useState<{ name: string; value: string; points: string }[]>(() =>
     teamTargets.length > 0
-      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value) }))
-      : [{ name: "", value: "" }]
+      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit) }))
+      : [{ name: "", value: "", points: "1" }]
   );
 
   const addPerson = async () => {
