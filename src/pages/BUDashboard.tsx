@@ -58,6 +58,7 @@ export default function BUDashboard() {
             </Button>
             <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
           </div>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
