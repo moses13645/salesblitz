@@ -18,7 +18,7 @@ interface ManageTeamProps {
   buId: string;
   sessionObjective: string | null;
   salespeople: { id: string; name: string }[];
-  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number }[];
+  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number }[];
 }
 
 export function ManageTeam({ buId, sessionObjective, salespeople, targets }: ManageTeamProps) {
@@ -29,10 +29,10 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
 
   // Build editable metrics from existing team targets
   const teamTargets = targets.filter((t) => !t.salesperson_id);
-  const [metrics, setMetrics] = useState<{ name: string; value: string }[]>(() =>
+  const [metrics, setMetrics] = useState<{ name: string; value: string; points: string }[]>(() =>
     teamTargets.length > 0
-      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value) }))
-      : [{ name: "", value: "" }]
+      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit) }))
+      : [{ name: "", value: "", points: "1" }]
   );
 
   const addPerson = async () => {
@@ -70,11 +70,12 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
     for (const m of validMetrics) {
       const key = m.name.trim().toLowerCase();
       const val = parseInt(m.value, 10);
+      const pts = parseInt(m.points || "1", 10) || 1;
       const existing = teamTargets.find((t) => t.metric.toLowerCase() === key);
       if (existing) {
-        await supabase.from("targets").update({ target_value: val, metric: key }).eq("id", existing.id);
+        await supabase.from("targets").update({ target_value: val, metric: key, points_per_unit: pts }).eq("id", existing.id);
       } else {
-        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val });
+        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val, points_per_unit: pts });
       }
     }
 
@@ -133,8 +134,23 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
                       copy[i] = { ...copy[i], value: e.target.value };
                       setMetrics(copy);
                     }}
-                    className="w-24"
+                    className="w-20"
                   />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="Pts"
+                      value={m.points}
+                      onChange={(e) => {
+                        const copy = [...metrics];
+                        copy[i] = { ...copy[i], points: e.target.value };
+                        setMetrics(copy);
+                      }}
+                      className="w-16"
+                    />
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">pts</span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -150,7 +166,7 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
               variant="outline"
               size="sm"
               className="mt-2"
-              onClick={() => setMetrics([...metrics, { name: "", value: "" }])}
+              onClick={() => setMetrics([...metrics, { name: "", value: "", points: "1" }])}
             >
               <Plus className="h-4 w-4 mr-1" /> Add metric
             </Button>

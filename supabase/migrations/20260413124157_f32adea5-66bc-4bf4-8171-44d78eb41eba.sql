@@ -1,0 +1,1 @@
+ALTER TABLE public.targets ADD COLUMN points_per_unit integer NOT NULL DEFAULT 1;

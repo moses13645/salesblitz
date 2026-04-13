@@ -4,23 +4,31 @@ import { Trophy } from "lucide-react";
 interface LeaderboardProps {
   salespeople: { id: string; name: string }[];
   activityLogs: { salesperson_id: string; metric: string; count: number }[];
-  targets: { salesperson_id: string | null; metric: string; target_value: number }[];
+  targets: { salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number }[];
 }
 
 export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardProps) {
   const metrics = getMetricsFromTargets(targets);
+  const teamTargets = targets.filter((t) => !t.salesperson_id);
+
+  // Build a map of metric -> points_per_unit
+  const pointsMap: Record<string, number> = {};
+  teamTargets.forEach((t) => {
+    pointsMap[t.metric] = t.points_per_unit ?? 1;
+  });
 
   const totals = salespeople.map((sp) => {
     const spLogs = activityLogs.filter((l) => l.salesperson_id === sp.id);
     const byMetric: Record<string, number> = {};
+    let score = 0;
     spLogs.forEach((l) => {
       byMetric[l.metric] = (byMetric[l.metric] || 0) + l.count;
+      score += l.count * (pointsMap[l.metric] ?? 1);
     });
-    const totalFirst = byMetric[metrics[0]?.key] || 0;
-    return { ...sp, byMetric, totalFirst };
+    return { ...sp, byMetric, score };
   });
 
-  totals.sort((a, b) => b.totalFirst - a.totalFirst);
+  totals.sort((a, b) => b.score - a.score);
 
   return (
     <div className="rounded-lg bg-card border border-border shadow-sm overflow-hidden">
@@ -37,8 +45,12 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
               {metrics.map((m) => (
                 <th key={m.key} className="text-center p-3 font-medium text-muted-foreground">
                   {m.label}
+                  {pointsMap[m.key] && pointsMap[m.key] !== 1 && (
+                    <span className="block text-xs font-normal">×{pointsMap[m.key]}pt</span>
+                  )}
                 </th>
               ))}
+              <th className="text-center p-3 font-medium text-foreground">Score</th>
             </tr>
           </thead>
           <tbody>
@@ -60,11 +72,14 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
                     </td>
                   );
                 })}
+                <td className="text-center p-3">
+                  <span className="font-display font-bold text-primary">{sp.score}</span>
+                </td>
               </tr>
             ))}
             {totals.length === 0 && (
               <tr>
-                <td colSpan={2 + metrics.length} className="p-6 text-center text-muted-foreground">
+                <td colSpan={3 + metrics.length} className="p-6 text-center text-muted-foreground">
                   No salespeople yet. Join the team!
                 </td>
               </tr>
