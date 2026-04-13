@@ -62,28 +62,34 @@ export type Database = {
       business_units: {
         Row: {
           created_at: string
+          current_phase_index: number | null
           id: string
           name: string
           session_duration_minutes: number | null
           session_objective: string | null
+          session_phases: Json | null
           session_started_at: string | null
           slug: string
         }
         Insert: {
           created_at?: string
+          current_phase_index?: number | null
           id?: string
           name: string
           session_duration_minutes?: number | null
           session_objective?: string | null
+          session_phases?: Json | null
           session_started_at?: string | null
           slug: string
         }
         Update: {
           created_at?: string
+          current_phase_index?: number | null
           id?: string
           name?: string
           session_duration_minutes?: number | null
           session_objective?: string | null
+          session_phases?: Json | null
           session_started_at?: string | null
           slug?: string
         }

@@ -1,29 +1,51 @@
-import { useState, useEffect } from "react";
-import { Timer, Play, Square } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Timer, Play, Square, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
+
+export interface SessionPhase {
+  name: string;
+  durationMinutes: number;
+}
 
 interface SessionTimerProps {
   buId: string;
-  durationMinutes: number | null;
+  phases: SessionPhase[] | null;
+  currentPhaseIndex: number;
   startedAt: string | null;
+  // Legacy single-timer fallback
+  durationMinutes: number | null;
 }
 
-export function SessionTimer({ buId, durationMinutes, startedAt }: SessionTimerProps) {
+export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durationMinutes }: SessionTimerProps) {
   const [remaining, setRemaining] = useState<number | null>(null);
   const qc = useQueryClient();
 
-  const isRunning = !!startedAt && !!durationMinutes;
+  // Determine active phase
+  const activePhases = useMemo(() => {
+    if (phases && phases.length > 0) return phases;
+    if (durationMinutes) return [{ name: "Session", durationMinutes }];
+    return null;
+  }, [phases, durationMinutes]);
+
+  const currentPhase = activePhases ? activePhases[Math.min(currentPhaseIndex, activePhases.length - 1)] : null;
+  const isRunning = !!startedAt && !!currentPhase;
+  const isLastPhase = activePhases ? currentPhaseIndex >= activePhases.length - 1 : true;
 
   useEffect(() => {
+    if (!currentPhase) {
+      setRemaining(null);
+      return;
+    }
     if (!isRunning) {
-      setRemaining(durationMinutes ? durationMinutes * 60 : null);
+      setRemaining(currentPhase.durationMinutes * 60);
       return;
     }
 
     const calc = () => {
-      const end = new Date(startedAt).getTime() + durationMinutes * 60 * 1000;
+      const end = new Date(startedAt!).getTime() + currentPhase.durationMinutes * 60 * 1000;
       const diff = Math.max(0, Math.floor((end - Date.now()) / 1000));
       setRemaining(diff);
     };
@@ -31,12 +53,15 @@ export function SessionTimer({ buId, durationMinutes, startedAt }: SessionTimerP
     calc();
     const id = setInterval(calc, 1000);
     return () => clearInterval(id);
-  }, [startedAt, durationMinutes, isRunning]);
+  }, [startedAt, currentPhase, isRunning]);
 
   const startTimer = async () => {
     await supabase
       .from("business_units")
-      .update({ session_started_at: new Date().toISOString() })
+      .update({
+        session_started_at: new Date().toISOString(),
+        current_phase_index: currentPhaseIndex,
+      } as any)
       .eq("id", buId);
     qc.invalidateQueries({ queryKey: ["bu"] });
   };
@@ -44,50 +69,111 @@ export function SessionTimer({ buId, durationMinutes, startedAt }: SessionTimerP
   const stopTimer = async () => {
     await supabase
       .from("business_units")
-      .update({ session_started_at: null })
+      .update({ session_started_at: null } as any)
       .eq("id", buId);
     qc.invalidateQueries({ queryKey: ["bu"] });
   };
 
-  if (!durationMinutes) return null;
+  const nextPhase = async () => {
+    if (!activePhases || isLastPhase) return;
+    const next = currentPhaseIndex + 1;
+    await supabase
+      .from("business_units")
+      .update({
+        current_phase_index: next,
+        session_started_at: new Date().toISOString(),
+      } as any)
+      .eq("id", buId);
+    qc.invalidateQueries({ queryKey: ["bu"] });
+  };
+
+  const resetTimer = async () => {
+    await supabase
+      .from("business_units")
+      .update({
+        session_started_at: null,
+        current_phase_index: 0,
+      } as any)
+      .eq("id", buId);
+    qc.invalidateQueries({ queryKey: ["bu"] });
+  };
+
+  if (!activePhases || activePhases.length === 0) return null;
 
   const mins = Math.floor((remaining ?? 0) / 60);
   const secs = (remaining ?? 0) % 60;
   const isExpired = remaining === 0 && isRunning;
-  const pct = isRunning && durationMinutes
-    ? Math.max(0, (remaining ?? 0) / (durationMinutes * 60)) * 100
-    : 100;
+  const phaseDuration = currentPhase ? currentPhase.durationMinutes * 60 : 1;
+  const pct = isRunning ? Math.max(0, (remaining ?? 0) / phaseDuration) * 100 : 100;
 
   return (
-    <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-mono transition-colors ${
-      isExpired
-        ? "border-destructive/50 bg-destructive/10 text-destructive animate-pulse"
-        : isRunning
-          ? "border-primary/30 bg-primary/5 text-foreground"
-          : "border-border bg-muted text-muted-foreground"
-    }`}>
-      <Timer className="h-4 w-4 shrink-0" />
-      <div className="flex items-center gap-1.5">
-        <span className="tabular-nums min-w-[3.5rem] text-center">
-          {isExpired ? "00:00" : `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`}
-        </span>
-        {/* Mini progress bar */}
-        <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-1000 ${isExpired ? "bg-destructive" : "bg-primary"}`}
-            style={{ width: `${pct}%` }}
-          />
+    <div className="flex items-center gap-2">
+      {/* Phase indicator pills */}
+      {activePhases.length > 1 && (
+        <div className="hidden sm:flex items-center gap-1">
+          {activePhases.map((p, i) => (
+            <Badge
+              key={i}
+              variant={i === currentPhaseIndex ? "default" : i < currentPhaseIndex && isRunning ? "secondary" : "outline"}
+              className={`text-[10px] px-1.5 py-0 h-5 ${
+                i === currentPhaseIndex ? "" : "opacity-60"
+              }`}
+            >
+              {p.name}
+            </Badge>
+          ))}
         </div>
-      </div>
-      {!isRunning ? (
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={startTimer}>
-          <Play className="h-3 w-3" />
-        </Button>
-      ) : (
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={stopTimer}>
-          <Square className="h-3 w-3" />
-        </Button>
       )}
+
+      {/* Timer display */}
+      <div
+        className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-mono transition-colors ${
+          isExpired
+            ? "border-destructive/50 bg-destructive/10 text-destructive animate-pulse"
+            : isRunning
+              ? "border-primary/30 bg-primary/5 text-foreground"
+              : "border-border bg-muted text-muted-foreground"
+        }`}
+      >
+        <Timer className="h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-1.5">
+          {activePhases.length > 1 && (
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {currentPhase?.name}
+            </span>
+          )}
+          <span className="tabular-nums min-w-[3.5rem] text-center">
+            {isExpired
+              ? "00:00"
+              : `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`}
+          </span>
+          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ${isExpired ? "bg-destructive" : "bg-primary"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Controls */}
+        {!isRunning ? (
+          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={startTimer}>
+            <Play className="h-3 w-3" />
+          </Button>
+        ) : (
+          <>
+            {isExpired && !isLastPhase ? (
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextPhase} title="Phase suivante">
+                <SkipForward className="h-3 w-3" />
+              </Button>
+            ) : (
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={stopTimer}>
+                <Square className="h-3 w-3" />
+              </Button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
