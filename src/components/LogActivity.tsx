@@ -16,18 +16,37 @@ interface LogActivityProps {
 }
 
 function fireFireworks() {
-  const duration = 2000;
+  const duration = 4000;
   const end = Date.now() + duration;
+  const colors = ["#CA1D34", "#FFD040", "#372E95", "#ff0", "#00ff88", "#ff6600", "#0ff", "#f0f"];
+
+  // Big initial burst from center
+  confetti({ particleCount: 150, spread: 100, startVelocity: 45, origin: { x: 0.5, y: 0.5 }, colors });
+  confetti({ particleCount: 100, spread: 160, startVelocity: 55, origin: { x: 0.5, y: 0.4 }, colors });
+
+  // Continuous explosions from random positions
   const interval = setInterval(() => {
     if (Date.now() > end) return clearInterval(interval);
+
+    // Two simultaneous bursts from different positions
     confetti({
-      particleCount: 30,
-      startVelocity: 30,
-      spread: 360,
-      origin: { x: Math.random(), y: Math.random() * 0.4 },
-      colors: ["#ff0", "#f0f", "#0ff", "#ff6600", "#00ff00"],
+      particleCount: 40 + Math.random() * 40,
+      startVelocity: 25 + Math.random() * 30,
+      spread: 80 + Math.random() * 80,
+      origin: { x: 0.1 + Math.random() * 0.8, y: Math.random() * 0.5 },
+      colors,
+      ticks: 200,
     });
-  }, 150);
+    confetti({
+      particleCount: 20 + Math.random() * 30,
+      startVelocity: 35 + Math.random() * 25,
+      spread: 120,
+      origin: { x: Math.random(), y: Math.random() * 0.3 },
+      colors,
+      ticks: 300,
+      gravity: 0.8,
+    });
+  }, 120);
 }
 
 export function LogActivity({ buId, salespeople, targets, activityLogs }: LogActivityProps) {
