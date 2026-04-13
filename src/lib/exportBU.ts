@@ -3,7 +3,7 @@ import { getMetricsFromTargets } from "./metrics";
 
 type Salesperson = { id: string; name: string; bu_id: string };
 type Target = { metric: string; target_value: number; points_per_unit: number; salesperson_id: string | null; bu_id: string };
-type Log = { metric: string; count: number; salesperson_id: string; note: string | null; logged_at: string; bu_id: string };
+type Log = { metric: string; count: number; salesperson_id: string; note: string | null; logged_at: string; bu_id: string; fields_data?: any };
 type BU = { id: string; name: string; slug: string };
 
 function addBUSheets(
