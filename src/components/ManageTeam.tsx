@@ -114,17 +114,61 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sal
             />
           </div>
 
-          {/* Session Duration */}
+          {/* Session Phases */}
           <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Durée de la session (minutes)</h4>
-            <Input
-              type="number"
-              min={1}
-              placeholder="ex: 90"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              className="w-32"
-            />
+            <h4 className="text-sm font-medium text-muted-foreground mb-1">Phases de la session</h4>
+            <p className="text-xs text-muted-foreground mb-3">
+              Configurez la séquence de phases (ex: Session 1 → Débrief → Session 2). Chaque phase a un nom et une durée.
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
+                <span className="flex-1">Nom de la phase</span>
+                <span className="w-24 text-center">Durée (min)</span>
+                <span className="w-9" />
+              </div>
+              {phases.map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    placeholder="ex: Session 1"
+                    value={p.name}
+                    onChange={(e) => {
+                      const copy = [...phases];
+                      copy[i] = { ...copy[i], name: e.target.value };
+                      setPhases(copy);
+                    }}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    min={1}
+                    placeholder="45"
+                    value={p.duration}
+                    onChange={(e) => {
+                      const copy = [...phases];
+                      copy[i] = { ...copy[i], duration: e.target.value };
+                      setPhases(copy);
+                    }}
+                    className="w-24"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setPhases(phases.filter((_, j) => j !== i))}
+                    disabled={phases.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => setPhases([...phases, { name: "", duration: "" }])}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Ajouter une phase
+            </Button>
           </div>
 
            <div>

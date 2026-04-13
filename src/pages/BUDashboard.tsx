@@ -50,6 +50,12 @@ export default function BUDashboard() {
           <div className="flex items-center gap-2">
             <SessionTimer
               buId={bu.id}
+              phases={(() => {
+                const raw = (bu as any).session_phases;
+                if (Array.isArray(raw) && raw.length > 0) return raw;
+                return null;
+              })()}
+              currentPhaseIndex={(bu as any).current_phase_index ?? 0}
               durationMinutes={(bu as any).session_duration_minutes ?? null}
               startedAt={(bu as any).session_started_at ?? null}
             />
