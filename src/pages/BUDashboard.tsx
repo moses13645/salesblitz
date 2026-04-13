@@ -4,6 +4,7 @@ import { TeamProgress } from "@/components/TeamProgress";
 import { Leaderboard } from "@/components/Leaderboard";
 import { LogActivity } from "@/components/LogActivity";
 import { ManageTeam } from "@/components/ManageTeam";
+import { JoinTeam } from "@/components/JoinTeam";
 import { ArrowLeft, Zap } from "lucide-react";
 
 export default function BUDashboard() {
