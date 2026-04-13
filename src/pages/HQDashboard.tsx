@@ -1,9 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getMetricsFromTargets } from "@/lib/metrics";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
-import { ArrowRight, Building2, Crown, Zap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { ArrowRight, Building2, Crown, Zap, Plus, Copy } from "lucide-react";
 
 function useHQData() {
   const bus = useQuery({
@@ -51,6 +55,9 @@ function useHQData() {
 
 export default function HQDashboard() {
   const { bus, salespeople, targets, logs } = useHQData();
+  const queryClient = useQueryClient();
+  const [buName, setBuName] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const allBus = bus.data ?? [];
   const allSalespeople = salespeople.data ?? [];
@@ -59,10 +66,8 @@ export default function HQDashboard() {
 
   const isLoading = bus.isLoading || salespeople.isLoading || targets.isLoading || logs.isLoading;
 
-  // Collect all unique metrics across all BUs
   const allMetrics = getMetricsFromTargets(allTargets);
 
-  // Global totals
   const globalTotals = allMetrics.map((m) => {
     const current = allLogs
       .filter((l) => l.metric === m.key)
@@ -73,7 +78,6 @@ export default function HQDashboard() {
     return { ...m, current, target };
   });
 
-  // Per-BU breakdown
   const buStats = allBus.map((bu) => {
     const buLogs = allLogs.filter((l) => l.bu_id === bu.id);
     const buTargets = allTargets.filter((t) => t.bu_id === bu.id && !t.salesperson_id);
@@ -88,6 +92,31 @@ export default function HQDashboard() {
 
     return { ...bu, metrics, headcount: buPeople.length };
   });
+
+  const createBU = async () => {
+    if (!buName.trim()) return;
+    const slug = buName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    setCreating(true);
+    const { error } = await supabase.from("business_units").insert({ name: buName.trim(), slug });
+    setCreating(false);
+    if (error) {
+      if (error.code === "23505") {
+        toast({ title: "Ce nom existe déjà", description: "Essayez un autre nom.", variant: "destructive" });
+      } else {
+        toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      }
+    } else {
+      setBuName("");
+      queryClient.invalidateQueries({ queryKey: ["all-bus"] });
+      toast({ title: "BU créée", description: `Le lien est /bu/${slug}` });
+    }
+  };
+
+  const copyLink = (slug: string) => {
+    const url = `${window.location.origin}/bu/${slug}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Lien copié !" });
+  };
 
   if (isLoading) {
     return (
@@ -117,50 +146,70 @@ export default function HQDashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-8">
-        {/* Global totals */}
-        <div>
-          <h2 className="font-display font-semibold text-foreground mb-3">Global Progress</h2>
-          <div className={`grid gap-4 ${globalTotals.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-            {globalTotals.map(({ key, label, icon: Icon, color, current, target }) => {
-              const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
-              return (
-                <div key={key} className="rounded-lg bg-card p-5 shadow-sm border border-border">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`rounded-md p-2 bg-muted ${color}`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                      <p className="text-2xl font-display font-bold text-foreground">
-                        {current}
-                        {target > 0 && <span className="text-sm font-normal text-muted-foreground"> / {target}</span>}
-                      </p>
-                    </div>
-                  </div>
-                  {target > 0 && (
-                    <div>
-                      <Progress value={pct} className="h-2" />
-                      <p className="text-xs text-muted-foreground mt-1">{Math.round(pct)}% of target</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+        {/* Create new BU */}
+        <div className="rounded-lg bg-card border border-border shadow-sm p-5">
+          <h2 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Créer une nouvelle BU
+          </h2>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Nom de la Business Unit"
+              value={buName}
+              onChange={(e) => setBuName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && createBU()}
+              className="flex-1"
+            />
+            <Button onClick={createBU} disabled={creating}>
+              Créer
+            </Button>
           </div>
         </div>
 
+        {/* Global totals */}
+        {globalTotals.length > 0 && (
+          <div>
+            <h2 className="font-display font-semibold text-foreground mb-3">Global Progress</h2>
+            <div className={`grid gap-4 ${globalTotals.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+              {globalTotals.map(({ key, label, icon: Icon, color, current, target }) => {
+                const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+                return (
+                  <div key={key} className="rounded-lg bg-card p-5 shadow-sm border border-border">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`rounded-md p-2 bg-muted ${color}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                        <p className="text-2xl font-display font-bold text-foreground">
+                          {current}
+                          {target > 0 && <span className="text-sm font-normal text-muted-foreground"> / {target}</span>}
+                        </p>
+                      </div>
+                    </div>
+                    {target > 0 && (
+                      <div>
+                        <Progress value={pct} className="h-2" />
+                        <p className="text-xs text-muted-foreground mt-1">{Math.round(pct)}% of target</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Per-BU cards */}
         <div>
-          <h2 className="font-display font-semibold text-foreground mb-3">By Business Unit</h2>
+          <h2 className="font-display font-semibold text-foreground mb-3">Par Business Unit</h2>
           {allBus.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No business units created yet.</p>
+            <p className="text-muted-foreground text-sm">Aucune BU créée pour le moment.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {buStats.map((bu) => (
-                <Link
+                <div
                   key={bu.id}
-                  to={`/bu/${bu.slug}`}
-                  className="rounded-lg bg-card border border-border shadow-sm p-5 hover:border-primary/40 transition-colors group"
+                  className="rounded-lg bg-card border border-border shadow-sm p-5"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -169,7 +218,18 @@ export default function HQDashboard() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{bu.headcount} reps</span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => copyLink(bu.slug)}
+                        title="Copier le lien"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <Link to={`/bu/${bu.slug}`}>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      </Link>
                     </div>
                   </div>
                   {bu.session_objective && (
@@ -193,7 +253,7 @@ export default function HQDashboard() {
                       );
                     })}
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
