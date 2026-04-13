@@ -101,19 +101,36 @@ export function exportBUToExcel(
   ws1["!cols"] = Object.keys(summaryRows[0] || {}).map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, ws1, "Synthèse");
 
-  // Sheet 2: Detail
+  // Sheet 2: Detail — collect all custom field keys across logs
+  const allFieldKeys = new Set<string>();
+  activityLogs.forEach((l) => {
+    if (l.fields_data && typeof l.fields_data === "object") {
+      Object.keys(l.fields_data as Record<string, unknown>).forEach((k) => allFieldKeys.add(k));
+    }
+  });
+  const fieldKeysArray = Array.from(allFieldKeys);
+
   const detailRows = activityLogs
     .sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
-    .map((l) => ({
-      Date: new Date(l.logged_at).toLocaleString("fr-FR"),
-      Vendeur: salespeople.find((sp) => sp.id === l.salesperson_id)?.name ?? "?",
-      Métrique: metrics.find((m) => m.key === l.metric)?.label ?? l.metric,
-      Quantité: l.count,
-      Commentaire: l.note ?? "",
-    }));
+    .map((l) => {
+      const row: Record<string, string | number> = {
+        Date: new Date(l.logged_at).toLocaleString("fr-FR"),
+        Vendeur: salespeople.find((sp) => sp.id === l.salesperson_id)?.name ?? "?",
+        Métrique: metrics.find((m) => m.key === l.metric)?.label ?? l.metric,
+        Quantité: l.count,
+      };
+      const fd = (l.fields_data ?? {}) as Record<string, unknown>;
+      fieldKeysArray.forEach((k) => {
+        row[k] = fd[k] != null ? String(fd[k]) : "";
+      });
+      row["Commentaire"] = l.note ?? "";
+      return row;
+    });
 
   const ws2 = XLSX.utils.json_to_sheet(detailRows);
-  ws2["!cols"] = [{ wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 10 }, { wch: 40 }];
+  const baseCols = [{ wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 10 }];
+  const fieldCols = fieldKeysArray.map(() => ({ wch: 20 }));
+  ws2["!cols"] = [...baseCols, ...fieldCols, { wch: 40 }];
   XLSX.utils.book_append_sheet(wb, ws2, "Détail activités");
 
   XLSX.writeFile(wb, `${buName.replace(/[^a-zA-Z0-9]/g, "_")}_export.xlsx`);
