@@ -115,6 +115,7 @@ export type Database = {
           created_at: string
           id: string
           metric: string
+          points_per_unit: number
           salesperson_id: string | null
           target_value: number
         }
@@ -123,6 +124,7 @@ export type Database = {
           created_at?: string
           id?: string
           metric: string
+          points_per_unit?: number
           salesperson_id?: string | null
           target_value?: number
         }
@@ -131,6 +133,7 @@ export type Database = {
           created_at?: string
           id?: string
           metric?: string
+          points_per_unit?: number
           salesperson_id?: string | null
           target_value?: number
         }
