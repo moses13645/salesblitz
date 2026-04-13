@@ -17,14 +17,16 @@ import {
 interface ManageTeamProps {
   buId: string;
   sessionObjective: string | null;
+  sessionDurationMinutes: number | null;
   salespeople: { id: string; name: string }[];
   targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number }[];
 }
 
-export function ManageTeam({ buId, sessionObjective, salespeople, targets }: ManageTeamProps) {
+export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, salespeople, targets }: ManageTeamProps) {
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(false);
   const [objective, setObjective] = useState(sessionObjective || "");
+  const [duration, setDuration] = useState(sessionDurationMinutes ? String(sessionDurationMinutes) : "");
   const qc = useQueryClient();
 
   // Build editable metrics from existing team targets
@@ -52,8 +54,12 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
   const saveAll = async () => {
     setLoading(true);
 
-    // Save session objective
-    await supabase.from("business_units").update({ session_objective: objective.trim() || null }).eq("id", buId);
+    // Save session objective + duration
+    const durationVal = parseInt(duration, 10);
+    await supabase.from("business_units").update({
+      session_objective: objective.trim() || null,
+      session_duration_minutes: durationVal > 0 ? durationVal : null,
+    }).eq("id", buId);
 
     // Save custom metric targets
     const validMetrics = metrics.filter((m) => m.name.trim() && parseInt(m.value || "0", 10) > 0);
@@ -105,6 +111,19 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
               value={objective}
               onChange={(e) => setObjective(e.target.value)}
               rows={3}
+            />
+          </div>
+
+          {/* Session Duration */}
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Durée de la session (minutes)</h4>
+            <Input
+              type="number"
+              min={1}
+              placeholder="ex: 90"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-32"
             />
           </div>
 
