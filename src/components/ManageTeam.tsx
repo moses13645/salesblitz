@@ -20,7 +20,7 @@ interface ManageTeamProps {
   sessionDurationMinutes: number | null;
   sessionPhases: { name: string; durationMinutes: number }[] | null;
   salespeople: { id: string; name: string }[];
-  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number }[];
+  targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number; custom_fields?: { name: string; type: string; required: boolean }[] | null }[];
 }
 
 export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sessionPhases, salespeople, targets }: ManageTeamProps) {
@@ -40,10 +40,10 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
 
   // Build editable metrics from existing team targets
   const teamTargets = targets.filter((t) => !t.salesperson_id);
-  const [metrics, setMetrics] = useState<{ name: string; value: string; points: string }[]>(() =>
+  const [metrics, setMetrics] = useState<{ name: string; value: string; points: string; fields: { name: string; type: string; required: boolean }[] }[]>(() =>
     teamTargets.length > 0
-      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit) }))
-      : [{ name: "", value: "", points: "1" }]
+      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit), fields: (t as any).custom_fields ?? [] }))
+      : [{ name: "", value: "", points: "1", fields: [] }]
   );
 
   const addPerson = async () => {
@@ -93,11 +93,12 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       const key = m.name.trim().toLowerCase();
       const val = parseInt(m.value, 10);
       const pts = parseInt(m.points || "1", 10) || 1;
+      const cf = m.fields.length > 0 ? m.fields : null;
       const existing = teamTargets.find((t) => t.metric.toLowerCase() === key);
       if (existing) {
-        await supabase.from("targets").update({ target_value: val, metric: key, points_per_unit: pts }).eq("id", existing.id);
+        await supabase.from("targets").update({ target_value: val, metric: key, points_per_unit: pts, custom_fields: cf } as any).eq("id", existing.id);
       } else {
-        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val, points_per_unit: pts });
+        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val, points_per_unit: pts, custom_fields: cf } as any);
       }
     }
 
