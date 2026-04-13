@@ -62,7 +62,23 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
       const metricLabel = metrics.find((m) => m.key === selectedMetric)?.label || selectedMetric;
       toast({ title: `✓ ${metricLabel} enregistré !` });
       setNote("");
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+
+      // Check if this metric just hit its target
+      const teamTarget = targets.find((t) => !t.salesperson_id && t.metric === selectedMetric);
+      if (teamTarget && teamTarget.target_value > 0) {
+        const currentTotal = activityLogs
+          .filter((l) => l.metric === selectedMetric)
+          .reduce((s, l) => s + l.count, 0) + 1; // +1 for the one just logged
+        if (currentTotal >= teamTarget.target_value) {
+          fireFireworks();
+          toast({ title: `🎆 Objectif "${metricLabel}" atteint !` });
+        } else {
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+        }
+      } else {
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+      }
+
       qc.invalidateQueries({ queryKey: ["activity_logs", buId] });
     }
   };
