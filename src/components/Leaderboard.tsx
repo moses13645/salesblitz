@@ -45,9 +45,7 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
               {metrics.map((m) => (
                 <th key={m.key} className="text-center p-3 font-medium text-muted-foreground">
                   {m.label}
-                  {pointsMap[m.key] && pointsMap[m.key] !== 1 && (
-                    <span className="block text-xs font-normal">×{pointsMap[m.key]}pt</span>
-                  )}
+                  <span className="block text-xs font-normal">×{pointsMap[m.key] ?? 1}pt</span>
                 </th>
               ))}
               <th className="text-center p-3 font-medium text-foreground">Score</th>
