@@ -5,7 +5,9 @@ import { Leaderboard } from "@/components/Leaderboard";
 import { LogActivity } from "@/components/LogActivity";
 import { ManageTeam } from "@/components/ManageTeam";
 import { ActivityFeed } from "@/components/ActivityFeed";
-import { ArrowLeft, Zap, Target } from "lucide-react";
+import { ArrowLeft, Zap, Target, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportBUToExcel } from "@/lib/exportBU";
 
 export default function BUDashboard() {
   const { slug } = useParams<{ slug: string }>();
@@ -44,7 +46,18 @@ export default function BUDashboard() {
               <h1 className="font-display font-bold text-xl text-foreground">{bu.name}</h1>
             </div>
           </div>
-          <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportBUToExcel(bu.name, salespeople, targets, activityLogs)}
+              className="gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
+          </div>
         </div>
       </header>
 
