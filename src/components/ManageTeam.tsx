@@ -18,15 +18,24 @@ interface ManageTeamProps {
   buId: string;
   sessionObjective: string | null;
   sessionDurationMinutes: number | null;
+  sessionPhases: { name: string; durationMinutes: number }[] | null;
   salespeople: { id: string; name: string }[];
   targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number }[];
 }
 
-export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, salespeople, targets }: ManageTeamProps) {
+export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sessionPhases, salespeople, targets }: ManageTeamProps) {
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(false);
   const [objective, setObjective] = useState(sessionObjective || "");
-  const [duration, setDuration] = useState(sessionDurationMinutes ? String(sessionDurationMinutes) : "");
+  const [phases, setPhases] = useState<{ name: string; duration: string }[]>(() => {
+    if (sessionPhases && sessionPhases.length > 0) {
+      return sessionPhases.map(p => ({ name: p.name, duration: String(p.durationMinutes) }));
+    }
+    if (sessionDurationMinutes) {
+      return [{ name: "Session", duration: String(sessionDurationMinutes) }];
+    }
+    return [{ name: "Session 1", duration: "" }, { name: "Débrief", duration: "" }, { name: "Session 2", duration: "" }];
+  });
   const qc = useQueryClient();
 
   // Build editable metrics from existing team targets
@@ -54,12 +63,19 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sal
   const saveAll = async () => {
     setLoading(true);
 
-    // Save session objective + duration
-    const durationVal = parseInt(duration, 10);
+    // Build phases array
+    const validPhases = phases
+      .filter(p => p.name.trim() && parseInt(p.duration, 10) > 0)
+      .map(p => ({ name: p.name.trim(), durationMinutes: parseInt(p.duration, 10) }));
+
+    // Total duration for legacy field
+    const totalDuration = validPhases.reduce((sum, p) => sum + p.durationMinutes, 0);
+
     await supabase.from("business_units").update({
       session_objective: objective.trim() || null,
-      session_duration_minutes: durationVal > 0 ? durationVal : null,
-    }).eq("id", buId);
+      session_duration_minutes: totalDuration > 0 ? totalDuration : null,
+      session_phases: validPhases.length > 0 ? validPhases : null,
+    } as any).eq("id", buId);
 
     // Save custom metric targets
     const validMetrics = metrics.filter((m) => m.name.trim() && parseInt(m.value || "0", 10) > 0);
