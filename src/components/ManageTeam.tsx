@@ -70,11 +70,12 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
     for (const m of validMetrics) {
       const key = m.name.trim().toLowerCase();
       const val = parseInt(m.value, 10);
+      const pts = parseInt(m.points || "1", 10) || 1;
       const existing = teamTargets.find((t) => t.metric.toLowerCase() === key);
       if (existing) {
-        await supabase.from("targets").update({ target_value: val, metric: key }).eq("id", existing.id);
+        await supabase.from("targets").update({ target_value: val, metric: key, points_per_unit: pts }).eq("id", existing.id);
       } else {
-        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val });
+        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val, points_per_unit: pts });
       }
     }
 
