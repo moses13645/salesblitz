@@ -46,8 +46,18 @@ export default function BUDashboard() {
               <h1 className="font-display font-bold text-xl text-foreground">{bu.name}</h1>
             </div>
           </div>
-          <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
-        </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportBUToExcel(bu.name, salespeople, targets, activityLogs)}
+              className="gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} salespeople={salespeople} targets={targets} />
+          </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
