@@ -108,14 +108,23 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
             />
           </div>
 
-          {/* Custom Metrics */}
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">Targets</h4>
+           <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-1">Objectifs de la session</h4>
+            <p className="text-xs text-muted-foreground mb-3">
+              Définissez les métriques à suivre, l'objectif d'équipe pour chacune, et les points attribués par unité pour le classement.
+            </p>
             <div className="space-y-2">
+              {/* Column headers */}
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
+                <span className="flex-1">Métrique</span>
+                <span className="w-20 text-center">Objectif</span>
+                <span className="w-[5.5rem] text-center">Pts / unité</span>
+                <span className="w-9" />
+              </div>
               {metrics.map((m, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Input
-                    placeholder="Metric name (e.g. clients contactés)"
+                    placeholder="ex: clients contactés"
                     value={m.name}
                     onChange={(e) => {
                       const copy = [...metrics];
@@ -127,7 +136,7 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
                   <Input
                     type="number"
                     min={0}
-                    placeholder="Target"
+                    placeholder="0"
                     value={m.value}
                     onChange={(e) => {
                       const copy = [...metrics];
@@ -136,21 +145,18 @@ export function ManageTeam({ buId, sessionObjective, salespeople, targets }: Man
                     }}
                     className="w-20"
                   />
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      min={1}
-                      placeholder="Pts"
-                      value={m.points}
-                      onChange={(e) => {
-                        const copy = [...metrics];
-                        copy[i] = { ...copy[i], points: e.target.value };
-                        setMetrics(copy);
-                      }}
-                      className="w-16"
-                    />
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">pts</span>
-                  </div>
+                  <Input
+                    type="number"
+                    min={1}
+                    placeholder="1"
+                    value={m.points}
+                    onChange={(e) => {
+                      const copy = [...metrics];
+                      copy[i] = { ...copy[i], points: e.target.value };
+                      setMetrics(copy);
+                    }}
+                    className="w-[5.5rem]"
+                  />
                   <Button
                     variant="ghost"
                     size="icon"
