@@ -21,6 +21,7 @@ export type Database = {
           id: string
           logged_at: string
           metric: string
+          note: string | null
           salesperson_id: string
         }
         Insert: {
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           logged_at?: string
           metric: string
+          note?: string | null
           salesperson_id: string
         }
         Update: {
@@ -37,6 +39,7 @@ export type Database = {
           id?: string
           logged_at?: string
           metric?: string
+          note?: string | null
           salesperson_id?: string
         }
         Relationships: [
