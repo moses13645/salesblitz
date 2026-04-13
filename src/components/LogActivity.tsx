@@ -12,9 +12,25 @@ interface LogActivityProps {
   buId: string;
   salespeople: { id: string; name: string }[];
   targets: { metric: string; salesperson_id: string | null; target_value: number }[];
+  activityLogs: { metric: string; count: number }[];
 }
 
-export function LogActivity({ buId, salespeople, targets }: LogActivityProps) {
+function fireFireworks() {
+  const duration = 2000;
+  const end = Date.now() + duration;
+  const interval = setInterval(() => {
+    if (Date.now() > end) return clearInterval(interval);
+    confetti({
+      particleCount: 30,
+      startVelocity: 30,
+      spread: 360,
+      origin: { x: Math.random(), y: Math.random() * 0.4 },
+      colors: ["#ff0", "#f0f", "#0ff", "#ff6600", "#00ff00"],
+    });
+  }, 150);
+}
+
+export function LogActivity({ buId, salespeople, targets, activityLogs }: LogActivityProps) {
   const metrics = getMetricsFromTargets(targets);
   const [selectedPerson, setSelectedPerson] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<string>(metrics[0]?.key || "");
