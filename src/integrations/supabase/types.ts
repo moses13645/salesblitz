@@ -64,21 +64,27 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          session_duration_minutes: number | null
           session_objective: string | null
+          session_started_at: string | null
           slug: string
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          session_duration_minutes?: number | null
           session_objective?: string | null
+          session_started_at?: string | null
           slug: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          session_duration_minutes?: number | null
           session_objective?: string | null
+          session_started_at?: string | null
           slug?: string
         }
         Relationships: []
