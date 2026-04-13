@@ -90,16 +90,17 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
     }
 
     // Build fields_data and note
-    const fieldsData = customFields.length > 0
-      ? Object.fromEntries(
-          customFields.map((f) => [f.name, f.type === "number" ? Number(fieldsValues[f.name] || 0) : (fieldsValues[f.name] || "").trim()])
-        )
-      : null;
+    let fieldsData: Record<string, any> | null = null;
+    let note: string | null = null;
 
-    // Legacy note = concatenation of field values for backward compat
-    const note = customFields.length > 0
-      ? customFields.map((f) => `${f.name}: ${fieldsValues[f.name] || ""}`).join(" | ")
-      : null;
+    if (customFields.length > 0) {
+      fieldsData = Object.fromEntries(
+        customFields.map((f) => [f.name, f.type === "number" ? Number(fieldsValues[f.name] || 0) : (fieldsValues[f.name] || "").trim()])
+      );
+      note = customFields.map((f) => `${f.name}: ${fieldsValues[f.name] || ""}`).join(" | ");
+    } else {
+      note = (fieldsValues["__note"] || "").trim() || null;
+    }
 
     setLoading(true);
     const { error } = await supabase.from("activity_logs").insert({

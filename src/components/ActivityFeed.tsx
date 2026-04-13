@@ -8,6 +8,7 @@ interface ActivityFeedProps {
     count: number;
     logged_at: string;
     note?: string | null;
+    fields_data?: Record<string, any> | null;
   }[];
   salespeople: { id: string; name: string }[];
 }
@@ -33,6 +34,7 @@ export function ActivityFeed({ activityLogs, salespeople }: ActivityFeedProps) {
             minute: "2-digit",
           });
           const name = spMap[log.salesperson_id] || "Inconnu";
+          const fd = log.fields_data as Record<string, any> | null;
 
           return (
             <div key={log.id} className="px-4 py-3 flex items-start gap-3 text-sm hover:bg-muted/30 transition-colors">
@@ -41,12 +43,23 @@ export function ActivityFeed({ activityLogs, salespeople }: ActivityFeedProps) {
                 <span className="font-medium text-foreground">{name}</span>
                 <span className="text-muted-foreground"> a ajouté </span>
                 <span className="font-medium text-foreground">"{log.metric}"</span>
-                {log.note && (
+                {fd && Object.keys(fd).length > 0 ? (
+                  <span className="text-muted-foreground">
+                    {" — "}
+                    {Object.entries(fd).map(([k, v], i) => (
+                      <span key={k}>
+                        {i > 0 && " · "}
+                        <span className="text-xs font-medium text-foreground">{k}:</span>{" "}
+                        <span className="italic">{String(v)}</span>
+                      </span>
+                    ))}
+                  </span>
+                ) : log.note ? (
                   <>
                     <span className="text-muted-foreground"> — </span>
                     <span className="italic text-muted-foreground">{log.note}</span>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
           );
