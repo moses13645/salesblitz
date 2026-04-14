@@ -112,6 +112,16 @@ export default function HQDashboard() {
     toast({ title: "Link copied!" });
   };
 
+  const deleteBU = async (buId: string, buName: string) => {
+    const { error } = await supabase.from("business_units").delete().eq("id", buId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["all-bus"] });
+      toast({ title: "BU deleted", description: `"${buName}" has been removed.` });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
