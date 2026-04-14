@@ -7,7 +7,11 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { ArrowRight, Building2, Crown, Zap, Plus, Copy, Download } from "lucide-react";
+import { ArrowRight, Building2, Crown, Zap, Plus, Copy, Download, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { exportHQToExcel } from "@/lib/exportBU";
 
 function useHQData() {
@@ -108,6 +112,16 @@ export default function HQDashboard() {
     toast({ title: "Link copied!" });
   };
 
+  const deleteBU = async (buId: string, buName: string) => {
+    const { error } = await supabase.from("business_units").delete().eq("id", buId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["all-bus"] });
+      toast({ title: "BU deleted", description: `"${buName}" has been removed.` });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -185,6 +199,27 @@ export default function HQDashboard() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{bu.headcount} reps</span>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" title="Delete BU">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete "{bu.name}"?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete this Business Unit and all its associated data (reps, targets, activity logs). This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteBU(bu.id, bu.name)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                       <Button
                         variant="ghost"
                         size="icon"
