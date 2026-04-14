@@ -7,7 +7,11 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { ArrowRight, Building2, Crown, Zap, Plus, Copy, Download } from "lucide-react";
+import { ArrowRight, Building2, Crown, Zap, Plus, Copy, Download, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { exportHQToExcel } from "@/lib/exportBU";
 
 function useHQData() {
