@@ -46,7 +46,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
 
   const handleLog = async (metricKey: string) => {
     if (!selectedPerson) {
-      toast({ title: "Sélectionnez un commercial", variant: "destructive" });
+      toast({ title: "Select a salesperson", variant: "destructive" });
       return;
     }
 
@@ -61,10 +61,10 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
     setLoadingMetric(null);
 
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       const metricLabel = metrics.find((m) => m.key === metricKey)?.label || metricKey;
-      toast({ title: `✓ ${metricLabel} enregistré !` });
+      toast({ title: `✓ ${metricLabel} logged!` });
       setComment("");
 
       const teamTarget = targets.find((t) => !t.salesperson_id && t.metric === metricKey);
@@ -74,7 +74,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
           .reduce((s, l) => s + l.count, 0) + 1;
         if (currentTotal >= teamTarget.target_value) {
           fireFireworks();
-          toast({ title: `🎆 Objectif "${metricLabel}" atteint !` });
+          toast({ title: `🎆 Target "${metricLabel}" reached!` });
         } else {
           confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
         }
@@ -88,16 +88,16 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
 
   return (
     <div className="rounded-lg bg-card border border-border shadow-sm p-5">
-      <h3 className="font-display font-semibold text-foreground mb-4">Enregistrer une activité</h3>
+      <h3 className="font-display font-semibold text-foreground mb-4">Log Activity</h3>
       {metrics.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Configurez d'abord les objectifs via le bouton Manage.</p>
+        <p className="text-sm text-muted-foreground">Set up targets first via the Manage button.</p>
       ) : (
         <div className="space-y-3">
           <div className="flex items-end gap-3">
             <div className="min-w-[150px] shrink-0">
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Qui ?</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Who?</label>
               <Select value={selectedPerson} onValueChange={setSelectedPerson}>
-                <SelectTrigger><SelectValue placeholder="Commercial" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Salesperson" /></SelectTrigger>
                 <SelectContent>
                   {salespeople.map((sp) => (
                     <SelectItem key={sp.id} value={sp.id}>{sp.name}</SelectItem>
@@ -122,7 +122,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
 
           <div>
             <Input
-              placeholder="Commentaire optionnel (ex: Client Dupont)"
+              placeholder="Optional comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
