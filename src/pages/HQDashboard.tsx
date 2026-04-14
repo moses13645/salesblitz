@@ -91,21 +91,21 @@ export default function HQDashboard() {
     setCreating(false);
     if (error) {
       if (error.code === "23505") {
-        toast({ title: "Ce nom existe déjà", description: "Essayez un autre nom.", variant: "destructive" });
+        toast({ title: "This name already exists", description: "Try a different name.", variant: "destructive" });
       } else {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        toast({ title: "Error", description: error.message, variant: "destructive" });
       }
     } else {
       setBuName("");
       queryClient.invalidateQueries({ queryKey: ["all-bus"] });
-      toast({ title: "BU créée", description: `Le lien est /bu/${slug}` });
+      toast({ title: "BU created", description: `Link: /bu/${slug}` });
     }
   };
 
   const copyLink = (slug: string) => {
     const url = `${window.location.origin}/bu/${slug}`;
     navigator.clipboard.writeText(url);
-    toast({ title: "Lien copié !" });
+    toast({ title: "Link copied!" });
   };
 
   if (isLoading) {
@@ -150,11 +150,11 @@ export default function HQDashboard() {
         {/* Create new BU */}
         <div className="rounded-lg bg-card border border-border shadow-sm p-5">
           <h2 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Créer une nouvelle BU
+            <Plus className="h-4 w-4" /> Create a new BU
           </h2>
           <div className="flex gap-2">
             <Input
-              placeholder="Nom de la Business Unit"
+              placeholder="Business Unit name"
               value={buName}
               onChange={(e) => setBuName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createBU()}
@@ -168,9 +168,9 @@ export default function HQDashboard() {
 
         {/* Per-BU cards */}
         <div>
-          <h2 className="font-display font-semibold text-foreground mb-3">Par Business Unit</h2>
+          <h2 className="font-display font-semibold text-foreground mb-3">By Business Unit</h2>
           {allBus.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Aucune BU créée pour le moment.</p>
+            <p className="text-muted-foreground text-sm">No BU created yet.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {buStats.map((bu) => (
@@ -190,7 +190,7 @@ export default function HQDashboard() {
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => copyLink(bu.slug)}
-                        title="Copier le lien"
+                        title="Copy link"
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </Button>

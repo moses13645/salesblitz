@@ -16,37 +16,36 @@ function addBUSheets(
   const metrics = getMetricsFromTargets(targets);
 
   const summaryRows = salespeople.map((sp) => {
-    const row: Record<string, string | number> = { Vendeur: sp.name };
+    const row: Record<string, string | number> = { Salesperson: sp.name };
     let totalPoints = 0;
     metrics.forEach((m) => {
       const current = activityLogs.filter((l) => l.salesperson_id === sp.id && l.metric === m.key).reduce((s, l) => s + l.count, 0);
       const t = targets.find((t) => t.salesperson_id === sp.id && t.metric === m.key) ?? targets.find((t) => !t.salesperson_id && t.metric === m.key);
       const target = t?.target_value ?? 0;
       const ppu = t?.points_per_unit ?? 1;
-      row[`${m.label} (réalisé)`] = current;
-      row[`${m.label} (objectif)`] = target;
+      row[`${m.label} (actual)`] = current;
+      row[`${m.label} (target)`] = target;
       row[`${m.label} (%)`] = target > 0 ? Math.round((current / target) * 100) : 0;
       totalPoints += current * ppu;
     });
-    row["Points total"] = totalPoints;
+    row["Total Points"] = totalPoints;
     return row;
   });
 
-  const teamRow: Record<string, string | number> = { Vendeur: "TOTAL ÉQUIPE" };
+  const teamRow: Record<string, string | number> = { Salesperson: "TEAM TOTAL" };
   let teamTotalPoints = 0;
   metrics.forEach((m) => {
     const current = activityLogs.filter((l) => l.metric === m.key).reduce((s, l) => s + l.count, 0);
     const target = targets.find((t) => !t.salesperson_id && t.metric === m.key)?.target_value ?? 0;
     const ppu = targets.find((t) => !t.salesperson_id && t.metric === m.key)?.points_per_unit ?? 1;
-    teamRow[`${m.label} (réalisé)`] = current;
-    teamRow[`${m.label} (objectif)`] = target;
+    teamRow[`${m.label} (actual)`] = current;
+    teamRow[`${m.label} (target)`] = target;
     teamRow[`${m.label} (%)`] = target > 0 ? Math.round((current / target) * 100) : 0;
     teamTotalPoints += current * ppu;
   });
-  teamRow["Points total"] = teamTotalPoints;
+  teamRow["Total Points"] = teamTotalPoints;
   summaryRows.push(teamRow);
 
-  // Truncate sheet name to 31 chars (Excel limit)
   const sheetName = buName.length > 31 ? buName.slice(0, 31) : buName;
 
   if (summaryRows.length > 0) {
@@ -67,41 +66,41 @@ export function exportBUToExcel(
 
   // Sheet 1: Summary
   const summaryRows = salespeople.map((sp) => {
-    const row: Record<string, string | number> = { Vendeur: sp.name };
+    const row: Record<string, string | number> = { Salesperson: sp.name };
     let totalPoints = 0;
     metrics.forEach((m) => {
       const current = activityLogs.filter((l) => l.salesperson_id === sp.id && l.metric === m.key).reduce((s, l) => s + l.count, 0);
       const t = targets.find((t) => t.salesperson_id === sp.id && t.metric === m.key) ?? targets.find((t) => !t.salesperson_id && t.metric === m.key);
       const target = t?.target_value ?? 0;
       const ppu = t?.points_per_unit ?? 1;
-      row[`${m.label} (réalisé)`] = current;
-      row[`${m.label} (objectif)`] = target;
+      row[`${m.label} (actual)`] = current;
+      row[`${m.label} (target)`] = target;
       row[`${m.label} (%)`] = target > 0 ? Math.round((current / target) * 100) : 0;
       totalPoints += current * ppu;
     });
-    row["Points total"] = totalPoints;
+    row["Total Points"] = totalPoints;
     return row;
   });
 
-  const teamRow: Record<string, string | number> = { Vendeur: "TOTAL ÉQUIPE" };
+  const teamRow: Record<string, string | number> = { Salesperson: "TEAM TOTAL" };
   let teamTotalPoints = 0;
   metrics.forEach((m) => {
     const current = activityLogs.filter((l) => l.metric === m.key).reduce((s, l) => s + l.count, 0);
     const target = targets.find((t) => !t.salesperson_id && t.metric === m.key)?.target_value ?? 0;
     const ppu = targets.find((t) => !t.salesperson_id && t.metric === m.key)?.points_per_unit ?? 1;
-    teamRow[`${m.label} (réalisé)`] = current;
-    teamRow[`${m.label} (objectif)`] = target;
+    teamRow[`${m.label} (actual)`] = current;
+    teamRow[`${m.label} (target)`] = target;
     teamRow[`${m.label} (%)`] = target > 0 ? Math.round((current / target) * 100) : 0;
     teamTotalPoints += current * ppu;
   });
-  teamRow["Points total"] = teamTotalPoints;
+  teamRow["Total Points"] = teamTotalPoints;
   summaryRows.push(teamRow);
 
   const ws1 = XLSX.utils.json_to_sheet(summaryRows);
   ws1["!cols"] = Object.keys(summaryRows[0] || {}).map(() => ({ wch: 18 }));
-  XLSX.utils.book_append_sheet(wb, ws1, "Synthèse");
+  XLSX.utils.book_append_sheet(wb, ws1, "Summary");
 
-  // Sheet 2: Detail — collect all custom field keys across logs
+  // Sheet 2: Detail
   const allFieldKeys = new Set<string>();
   activityLogs.forEach((l) => {
     if (l.fields_data && typeof l.fields_data === "object") {
@@ -114,16 +113,16 @@ export function exportBUToExcel(
     .sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
     .map((l) => {
       const row: Record<string, string | number> = {
-        Date: new Date(l.logged_at).toLocaleString("fr-FR"),
-        Vendeur: salespeople.find((sp) => sp.id === l.salesperson_id)?.name ?? "?",
-        Métrique: metrics.find((m) => m.key === l.metric)?.label ?? l.metric,
-        Quantité: l.count,
+        Date: new Date(l.logged_at).toLocaleString("en-US"),
+        Salesperson: salespeople.find((sp) => sp.id === l.salesperson_id)?.name ?? "?",
+        Metric: metrics.find((m) => m.key === l.metric)?.label ?? l.metric,
+        Count: l.count,
       };
       const fd = (l.fields_data ?? {}) as Record<string, unknown>;
       fieldKeysArray.forEach((k) => {
         row[k] = fd[k] != null ? String(fd[k]) : "";
       });
-      row["Commentaire"] = l.note ?? "";
+      row["Comment"] = l.note ?? "";
       return row;
     });
 
@@ -131,7 +130,7 @@ export function exportBUToExcel(
   const baseCols = [{ wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 10 }];
   const fieldCols = fieldKeysArray.map(() => ({ wch: 20 }));
   ws2["!cols"] = [...baseCols, ...fieldCols, { wch: 40 }];
-  XLSX.utils.book_append_sheet(wb, ws2, "Détail activités");
+  XLSX.utils.book_append_sheet(wb, ws2, "Activity Detail");
 
   XLSX.writeFile(wb, `${buName.replace(/[^a-zA-Z0-9]/g, "_")}_export.xlsx`);
 }
@@ -152,8 +151,8 @@ export function exportHQToExcel(
   });
 
   if (wb.SheetNames.length === 0) {
-    const ws = XLSX.utils.aoa_to_sheet([["Aucune donnée"]]);
-    XLSX.utils.book_append_sheet(wb, ws, "Vide");
+    const ws = XLSX.utils.aoa_to_sheet([["No data"]]);
+    XLSX.utils.book_append_sheet(wb, ws, "Empty");
   }
 
   XLSX.writeFile(wb, `Sales_Blitz_Export.xlsx`);
