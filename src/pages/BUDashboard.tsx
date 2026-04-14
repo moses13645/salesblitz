@@ -68,7 +68,7 @@ export default function BUDashboard() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} sessionDurationMinutes={(bu as any).session_duration_minutes ?? null} sessionPhases={(bu as any).session_phases ?? null} salespeople={salespeople} targets={targets} />
+            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} sessionDurationMinutes={(bu as any).session_duration_minutes ?? null} sessionPhases={(bu as any).session_phases ?? null} salespeople={salespeople} targets={targets} autoOpen={salespeople.length === 0 && targets.length === 0} />
           </div>
         </div>
       </header>
