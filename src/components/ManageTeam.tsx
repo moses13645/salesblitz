@@ -117,7 +117,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-2">Session Objective</h4>
             <Textarea
-              placeholder="Ex: Reconquérir les clients inactifs depuis 6 mois..."
+              placeholder="E.g.: Win back inactive clients from the last 6 months..."
               value={objective}
               onChange={(e) => setObjective(e.target.value)}
               rows={3}
@@ -126,14 +126,14 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
 
           {/* Session Phases */}
           <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-1">Phases de la session</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-1">Session Phases</h4>
             <p className="text-xs text-muted-foreground mb-3">
-              Configurez la séquence de phases (ex: Session 1 → Débrief → Session 2).
+              Configure the phase sequence (e.g. Session 1 → Debrief → Session 2).
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
-                <span className="flex-1">Nom de la phase</span>
-                <span className="w-24 text-center">Durée (min)</span>
+                <span className="flex-1">Phase Name</span>
+                <span className="w-24 text-center">Duration (min)</span>
                 <span className="w-9" />
               </div>
               {phases.map((p, i) => (
@@ -177,27 +177,27 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
               className="mt-2"
               onClick={() => setPhases([...phases, { name: "", duration: "" }])}
             >
-              <Plus className="h-4 w-4 mr-1" /> Ajouter une phase
+              <Plus className="h-4 w-4 mr-1" /> Add phase
             </Button>
           </div>
 
           {/* Metrics */}
           <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-1">Objectifs de la session</h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-1">Session Targets</h4>
             <p className="text-xs text-muted-foreground mb-3">
-              Définissez les métriques à suivre, l'objectif d'équipe et les points par unité.
+              Define the metrics to track, the team target, and points per unit.
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
-                <span className="flex-1">Métrique</span>
-                <span className="w-20 text-center">Objectif</span>
-                <span className="w-[5.5rem] text-center">Pts / unité</span>
+                <span className="flex-1">Metric</span>
+                <span className="w-20 text-center">Target</span>
+                <span className="w-[5.5rem] text-center">Pts / unit</span>
                 <span className="w-9" />
               </div>
               {metrics.map((m, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Input
-                    placeholder="ex: clients contactés"
+                    placeholder="e.g. clients contacted"
                     value={m.name}
                     onChange={(e) => {
                       const copy = [...metrics];

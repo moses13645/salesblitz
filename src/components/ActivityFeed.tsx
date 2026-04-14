@@ -24,16 +24,16 @@ export function ActivityFeed({ activityLogs, salespeople }: ActivityFeedProps) {
     <div className="rounded-lg bg-card border border-border shadow-sm overflow-hidden">
       <div className="p-4 border-b border-border flex items-center gap-2">
         <Clock className="h-5 w-5 text-muted-foreground" />
-        <h3 className="font-display font-semibold text-foreground">Historique d'activité</h3>
-        <span className="text-xs text-muted-foreground ml-auto">{activityLogs.length} entrées</span>
+        <h3 className="font-display font-semibold text-foreground">Activity History</h3>
+        <span className="text-xs text-muted-foreground ml-auto">{activityLogs.length} entries</span>
       </div>
       <div className="divide-y divide-border max-h-80 overflow-y-auto">
         {activityLogs.map((log) => {
-          const time = new Date(log.logged_at).toLocaleTimeString("fr-FR", {
+          const time = new Date(log.logged_at).toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
           });
-          const name = spMap[log.salesperson_id] || "Inconnu";
+          const name = spMap[log.salesperson_id] || "Unknown";
           const fd = log.fields_data as Record<string, any> | null;
 
           return (
@@ -41,7 +41,7 @@ export function ActivityFeed({ activityLogs, salespeople }: ActivityFeedProps) {
               <span className="text-xs text-muted-foreground font-mono mt-0.5 shrink-0">{time}</span>
               <div>
                 <span className="font-medium text-foreground">{name}</span>
-                <span className="text-muted-foreground"> a ajouté </span>
+                <span className="text-muted-foreground"> added </span>
                 <span className="font-medium text-foreground">"{log.metric}"</span>
                 {fd && Object.keys(fd).length > 0 ? (
                   <span className="text-muted-foreground">

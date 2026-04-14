@@ -163,7 +163,7 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
         ) : (
           <>
             {isExpired && !isLastPhase ? (
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextPhase} title="Phase suivante">
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={nextPhase} title="Next phase">
                 <SkipForward className="h-3 w-3" />
               </Button>
             ) : (
