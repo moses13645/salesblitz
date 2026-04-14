@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,11 @@ interface ManageTeamProps {
   sessionPhases: { name: string; durationMinutes: number }[] | null;
   salespeople: { id: string; name: string }[];
   targets: { id: string; bu_id: string; salesperson_id: string | null; metric: string; target_value: number; points_per_unit: number; custom_fields?: any }[];
+  autoOpen?: boolean;
 }
 
-export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sessionPhases, salespeople, targets }: ManageTeamProps) {
+export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, sessionPhases, salespeople, targets, autoOpen }: ManageTeamProps) {
+  const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(false);
   const [objective, setObjective] = useState(sessionObjective || "");
@@ -101,11 +103,15 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
     toast({ title: "Settings saved!" });
   };
 
+  useEffect(() => {
+    if (autoOpen) setOpen(true);
+  }, [autoOpen]);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Settings2 className="h-4 w-4 mr-2" /> Manage
+          <Settings2 className="h-4 w-4 mr-2" /> Setup
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
