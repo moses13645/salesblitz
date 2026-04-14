@@ -161,7 +161,7 @@ export default function HQDashboard() {
               className="flex-1"
             />
             <Button onClick={createBU} disabled={creating}>
-              Créer
+              Create
             </Button>
           </div>
         </div>
