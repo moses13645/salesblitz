@@ -197,7 +197,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
                 <span className="flex-1">Metric</span>
                 <span className="w-20 text-center">Target</span>
-                <span className="w-[5.5rem] text-center">Pts / unit</span>
+                <span className="w-[5.5rem] text-center">Scoring (pts/unit)</span>
                 <span className="w-9" />
               </div>
               {metrics.map((m, i) => (
