@@ -38,12 +38,11 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   });
   const qc = useQueryClient();
 
-  // Build editable metrics from existing team targets
   const teamTargets = targets.filter((t) => !t.salesperson_id);
-  const [metrics, setMetrics] = useState<{ name: string; value: string; points: string; fields: { name: string; type: string; required: boolean }[] }[]>(() =>
+  const [metrics, setMetrics] = useState<{ name: string; value: string; points: string }[]>(() =>
     teamTargets.length > 0
-      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit), fields: (t as any).custom_fields ?? [] }))
-      : [{ name: "", value: "", points: "1", fields: [] }]
+      ? teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit) }))
+      : [{ name: "", value: "", points: "1" }]
   );
 
   const addPerson = async () => {
@@ -63,12 +62,10 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   const saveAll = async () => {
     setLoading(true);
 
-    // Build phases array
     const validPhases = phases
       .filter(p => p.name.trim() && parseInt(p.duration, 10) > 0)
       .map(p => ({ name: p.name.trim(), durationMinutes: parseInt(p.duration, 10) }));
 
-    // Total duration for legacy field
     const totalDuration = validPhases.reduce((sum, p) => sum + p.durationMinutes, 0);
 
     await supabase.from("business_units").update({
@@ -77,10 +74,8 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       session_phases: validPhases.length > 0 ? validPhases : null,
     } as any).eq("id", buId);
 
-    // Save custom metric targets
     const validMetrics = metrics.filter((m) => m.name.trim() && parseInt(m.value || "0", 10) > 0);
 
-    // Delete old team targets that are no longer in the list
     const oldIds = teamTargets
       .filter((t) => !validMetrics.find((m) => m.name.trim().toLowerCase() === t.metric.toLowerCase()))
       .map((t) => t.id);
@@ -88,17 +83,15 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       await supabase.from("targets").delete().in("id", oldIds);
     }
 
-    // Upsert current metrics
     for (const m of validMetrics) {
       const key = m.name.trim().toLowerCase();
       const val = parseInt(m.value, 10);
       const pts = parseInt(m.points || "1", 10) || 1;
-      const cf = m.fields.length > 0 ? m.fields : null;
       const existing = teamTargets.find((t) => t.metric.toLowerCase() === key);
       if (existing) {
-        await supabase.from("targets").update({ target_value: val, metric: key, points_per_unit: pts, custom_fields: cf } as any).eq("id", existing.id);
+        await supabase.from("targets").update({ target_value: val, metric: key, points_per_unit: pts, custom_fields: null } as any).eq("id", existing.id);
       } else {
-        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val, points_per_unit: pts, custom_fields: cf } as any);
+        await supabase.from("targets").insert({ bu_id: buId, salesperson_id: null, metric: key, target_value: val, points_per_unit: pts, custom_fields: null } as any);
       }
     }
 
@@ -135,7 +128,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-1">Phases de la session</h4>
             <p className="text-xs text-muted-foreground mb-3">
-              Configurez la séquence de phases (ex: Session 1 → Débrief → Session 2). Chaque phase a un nom et une durée.
+              Configurez la séquence de phases (ex: Session 1 → Débrief → Session 2).
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
@@ -188,13 +181,13 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
             </Button>
           </div>
 
-           <div>
+          {/* Metrics */}
+          <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-1">Objectifs de la session</h4>
             <p className="text-xs text-muted-foreground mb-3">
-              Définissez les métriques à suivre, l'objectif d'équipe pour chacune, et les points attribués par unité pour le classement.
+              Définissez les métriques à suivre, l'objectif d'équipe et les points par unité.
             </p>
             <div className="space-y-2">
-              {/* Column headers */}
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-1">
                 <span className="flex-1">Métrique</span>
                 <span className="w-20 text-center">Objectif</span>
@@ -202,123 +195,49 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
                 <span className="w-9" />
               </div>
               {metrics.map((m, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="ex: clients contactés"
-                      value={m.name}
-                      onChange={(e) => {
-                        const copy = [...metrics];
-                        copy[i] = { ...copy[i], name: e.target.value };
-                        setMetrics(copy);
-                      }}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="0"
-                      value={m.value}
-                      onChange={(e) => {
-                        const copy = [...metrics];
-                        copy[i] = { ...copy[i], value: e.target.value };
-                        setMetrics(copy);
-                      }}
-                      className="w-20"
-                    />
-                    <Input
-                      type="number"
-                      min={1}
-                      placeholder="1"
-                      value={m.points}
-                      onChange={(e) => {
-                        const copy = [...metrics];
-                        copy[i] = { ...copy[i], points: e.target.value };
-                        setMetrics(copy);
-                      }}
-                      className="w-[5.5rem]"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setMetrics(metrics.filter((_, j) => j !== i))}
-                      disabled={metrics.length <= 1}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </div>
-                  {/* Custom fields config for this metric */}
-                  <div className="ml-4 pl-3 border-l-2 border-border space-y-1.5">
-                    {m.fields.map((f, fi) => (
-                      <div key={fi} className="flex items-center gap-2">
-                        <Input
-                          placeholder="Nom du champ (ex: Nom client)"
-                          value={f.name}
-                          onChange={(e) => {
-                            const copy = [...metrics];
-                            const fields = [...copy[i].fields];
-                            fields[fi] = { ...fields[fi], name: e.target.value };
-                            copy[i] = { ...copy[i], fields };
-                            setMetrics(copy);
-                          }}
-                          className="flex-1 h-8 text-xs"
-                        />
-                        <select
-                          value={f.type}
-                          onChange={(e) => {
-                            const copy = [...metrics];
-                            const fields = [...copy[i].fields];
-                            fields[fi] = { ...fields[fi], type: e.target.value };
-                            copy[i] = { ...copy[i], fields };
-                            setMetrics(copy);
-                          }}
-                          className="h-8 text-xs rounded-md border border-input bg-background px-2"
-                        >
-                          <option value="text">Texte</option>
-                          <option value="number">Nombre</option>
-                        </select>
-                        <label className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                          <input
-                            type="checkbox"
-                            checked={f.required}
-                            onChange={(e) => {
-                              const copy = [...metrics];
-                              const fields = [...copy[i].fields];
-                              fields[fi] = { ...fields[fi], required: e.target.checked };
-                              copy[i] = { ...copy[i], fields };
-                              setMetrics(copy);
-                            }}
-                            className="rounded"
-                          />
-                          Requis
-                        </label>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => {
-                            const copy = [...metrics];
-                            copy[i] = { ...copy[i], fields: copy[i].fields.filter((_, j) => j !== fi) };
-                            setMetrics(copy);
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3 text-muted-foreground" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs text-muted-foreground"
-                      onClick={() => {
-                        const copy = [...metrics];
-                        copy[i] = { ...copy[i], fields: [...copy[i].fields, { name: "", type: "text", required: true }] };
-                        setMetrics(copy);
-                      }}
-                    >
-                      <Plus className="h-3 w-3 mr-1" /> Ajouter un champ
-                    </Button>
-                  </div>
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    placeholder="ex: clients contactés"
+                    value={m.name}
+                    onChange={(e) => {
+                      const copy = [...metrics];
+                      copy[i] = { ...copy[i], name: e.target.value };
+                      setMetrics(copy);
+                    }}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    value={m.value}
+                    onChange={(e) => {
+                      const copy = [...metrics];
+                      copy[i] = { ...copy[i], value: e.target.value };
+                      setMetrics(copy);
+                    }}
+                    className="w-20"
+                  />
+                  <Input
+                    type="number"
+                    min={1}
+                    placeholder="1"
+                    value={m.points}
+                    onChange={(e) => {
+                      const copy = [...metrics];
+                      copy[i] = { ...copy[i], points: e.target.value };
+                      setMetrics(copy);
+                    }}
+                    className="w-[5.5rem]"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMetrics(metrics.filter((_, j) => j !== i))}
+                    disabled={metrics.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -326,7 +245,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
               variant="outline"
               size="sm"
               className="mt-2"
-              onClick={() => setMetrics([...metrics, { name: "", value: "", points: "1", fields: [] }])}
+              onClick={() => setMetrics([...metrics, { name: "", value: "", points: "1" }])}
             >
               <Plus className="h-4 w-4 mr-1" /> Add metric
             </Button>
