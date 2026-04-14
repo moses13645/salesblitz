@@ -93,8 +93,8 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
         <p className="text-sm text-muted-foreground">Configurez d'abord les objectifs via le bouton Manage.</p>
       ) : (
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[150px]">
+          <div className="flex items-end gap-3">
+            <div className="min-w-[150px] shrink-0">
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Qui ?</label>
               <Select value={selectedPerson} onValueChange={setSelectedPerson}>
                 <SelectTrigger><SelectValue placeholder="Commercial" /></SelectTrigger>
@@ -105,29 +105,27 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 min-w-[150px]">
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Commentaire (optionnel)</label>
-              <Input
-                placeholder="ex: Client Dupont"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
+            <div className="flex flex-wrap gap-2 items-center">
+              {metrics.map((m) => (
+                <Button
+                  key={m.key}
+                  onClick={() => handleLog(m.key)}
+                  disabled={loadingMetric === m.key}
+                  className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md font-semibold px-4"
+                >
+                  <Plus className="h-4 w-4" strokeWidth={3} />
+                  {m.label}
+                </Button>
+              ))}
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {metrics.map((m) => (
-              <Button
-                key={m.key}
-                variant="outline"
-                onClick={() => handleLog(m.key)}
-                disabled={loadingMetric === m.key}
-                className="gap-1.5"
-              >
-                <Plus className="h-4 w-4" />
-                {m.label}
-              </Button>
-            ))}
+          <div>
+            <Input
+              placeholder="Commentaire optionnel (ex: Client Dupont)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
           </div>
         </div>
       )}
