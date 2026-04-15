@@ -40,7 +40,7 @@ function fireFireworks() {
 export function LogActivity({ buId, salespeople, targets, activityLogs }: LogActivityProps) {
   const metrics = getMetricsFromTargets(targets);
   const [selectedPerson, setSelectedPerson] = useState("");
-  const [comment, setComment] = useState("");
+  
   const [loadingMetric, setLoadingMetric] = useState<string | null>(null);
   const qc = useQueryClient();
 
@@ -56,7 +56,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
       salesperson_id: selectedPerson,
       metric: metricKey,
       count: 1,
-      note: comment.trim() || null,
+      note: null,
     });
     setLoadingMetric(null);
 
@@ -65,7 +65,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
     } else {
       const metricLabel = metrics.find((m) => m.key === metricKey)?.label || metricKey;
       toast({ title: `✓ ${metricLabel} logged!` });
-      setComment("");
+      
 
       const teamTarget = targets.find((t) => !t.salesperson_id && t.metric === metricKey);
       if (teamTarget && teamTarget.target_value > 0) {
@@ -120,13 +120,6 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
             </div>
           </div>
 
-          <div>
-            <Input
-              placeholder="Optional comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-          </div>
         </div>
       )}
     </div>
