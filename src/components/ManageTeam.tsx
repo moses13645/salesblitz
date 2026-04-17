@@ -371,18 +371,18 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       <AlertDialog open={!!personToDelete} onOpenChange={(o) => !o && setPersonToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer {personToDelete?.name} ?</AlertDialogTitle>
+            <AlertDialogTitle>Remove {personToDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Toutes les activités enregistrées et les objectifs individuels associés à cette personne seront également supprimés définitivement.
+              This action cannot be undone. All activity logs and individual targets associated with this salesperson will also be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => personToDelete && removePerson(personToDelete.id, personToDelete.name)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
