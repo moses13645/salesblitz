@@ -13,6 +13,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ManageTeamProps {
   buId: string;
@@ -30,6 +40,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [personToDelete, setPersonToDelete] = useState<{ id: string; name: string } | null>(null);
   const [objective, setObjective] = useState(sessionObjective || "");
   const [phases, setPhases] = useState<{ name: string; duration: string }[]>(() => {
     if (sessionPhases && sessionPhases.length > 0) {
@@ -87,7 +98,6 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   };
 
   const removePerson = async (id: string, name: string) => {
-    if (!confirm(`Remove ${name}? Their activity logs will also be deleted.`)) return;
     await supabase.from("activity_logs").delete().eq("salesperson_id", id);
     await supabase.from("targets").delete().eq("salesperson_id", id);
     const { error } = await supabase.from("salespeople").delete().eq("id", id);
@@ -99,6 +109,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       qc.invalidateQueries({ queryKey: ["targets", buId] });
       toast({ title: `${name} removed` });
     }
+    setPersonToDelete(null);
   };
 
   const saveAll = async () => {
@@ -340,7 +351,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(sp.id, sp.name)}>
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removePerson(sp.id, sp.name)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPersonToDelete({ id: sp.id, name: sp.name })}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       </>
@@ -356,6 +367,26 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
           </Button>
         </div>
       </DialogContent>
+
+      <AlertDialog open={!!personToDelete} onOpenChange={(o) => !o && setPersonToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {personToDelete?.name} ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes les activités enregistrées et les objectifs individuels associés à cette personne seront également supprimés définitivement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => personToDelete && removePerson(personToDelete.id, personToDelete.name)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
