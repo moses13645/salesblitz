@@ -68,18 +68,26 @@ export default function BUDashboard() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} sessionDurationMinutes={(bu as any).session_duration_minutes ?? null} sessionPhases={(bu as any).session_phases ?? null} salespeople={salespeople} targets={targets} autoOpen={salespeople.length === 0 && targets.length === 0} />
+            <ManageTeam buId={bu.id} sessionObjective={bu.session_objective ?? null} sessionDurationMinutes={(bu as any).session_duration_minutes ?? null} sessionPhases={(bu as any).session_phases ?? null} salespeople={salespeople} targets={targets} />
           </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {bu.session_objective && (
+        {bu.session_objective ? (
           <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-3">
             <Target className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
               <p className="text-xs font-medium text-primary mb-1">Session Objective</p>
               <p className="text-sm text-foreground">{bu.session_objective}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-lg bg-muted/40 border border-dashed border-border p-4 flex items-start gap-3">
+            <Target className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Session Objective</p>
+              <p className="text-sm text-muted-foreground">No objective defined yet. Click <span className="font-semibold text-foreground">Setup</span> in the top-right to add one.</p>
             </div>
           </div>
         )}

@@ -90,7 +90,9 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
     <div className="rounded-lg bg-card border border-border shadow-sm p-5">
       <h3 className="font-display font-semibold text-foreground mb-4">Log Activity</h3>
       {metrics.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Set up targets first via the Manage button.</p>
+        <p className="text-sm text-muted-foreground">No metrics yet. Click <span className="font-semibold text-foreground">Setup</span> in the top-right to define session targets.</p>
+      ) : salespeople.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No salespeople yet. Click <span className="font-semibold text-foreground">Setup</span> in the top-right to add team members.</p>
       ) : (
         <div className="space-y-3">
           <div className="flex items-end gap-3">
