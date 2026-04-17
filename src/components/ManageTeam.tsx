@@ -367,6 +367,26 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
           </Button>
         </div>
       </DialogContent>
+
+      <AlertDialog open={!!personToDelete} onOpenChange={(o) => !o && setPersonToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {personToDelete?.name} ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes les activités enregistrées et les objectifs individuels associés à cette personne seront également supprimés définitivement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => personToDelete && removePerson(personToDelete.id, personToDelete.name)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
