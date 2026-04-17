@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { UserPlus, Settings2, Plus, Trash2 } from "lucide-react";
+import { UserPlus, Settings2, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,8 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
   const [objective, setObjective] = useState(sessionObjective || "");
   const [phases, setPhases] = useState<{ name: string; duration: string }[]>(() => {
     if (sessionPhases && sessionPhases.length > 0) {
@@ -58,6 +60,44 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       setNewName("");
       qc.invalidateQueries({ queryKey: ["salespeople", buId] });
       toast({ title: `Added ${newName.trim()}!` });
+    }
+  };
+
+  const startEdit = (id: string, name: string) => {
+    setEditingId(id);
+    setEditingName(name);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingName("");
+  };
+
+  const saveEdit = async (id: string) => {
+    const name = editingName.trim();
+    if (!name) return;
+    const { error } = await supabase.from("salespeople").update({ name }).eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      qc.invalidateQueries({ queryKey: ["salespeople", buId] });
+      toast({ title: "Salesperson updated" });
+      cancelEdit();
+    }
+  };
+
+  const removePerson = async (id: string, name: string) => {
+    if (!confirm(`Remove ${name}? Their activity logs will also be deleted.`)) return;
+    await supabase.from("activity_logs").delete().eq("salesperson_id", id);
+    await supabase.from("targets").delete().eq("salesperson_id", id);
+    const { error } = await supabase.from("salespeople").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      qc.invalidateQueries({ queryKey: ["salespeople", buId] });
+      qc.invalidateQueries({ queryKey: ["activity_logs", buId] });
+      qc.invalidateQueries({ queryKey: ["targets", buId] });
+      toast({ title: `${name} removed` });
     }
   };
 
@@ -272,11 +312,40 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
               </Button>
             </div>
             {salespeople.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
+              <div className="mt-3 space-y-1">
                 {salespeople.map((sp) => (
-                  <span key={sp.id} className="text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground">
-                    {sp.name}
-                  </span>
+                  <div key={sp.id} className="flex items-center gap-2 bg-muted/50 px-2 py-1 rounded-md">
+                    {editingId === sp.id ? (
+                      <>
+                        <Input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEdit(sp.id);
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                          className="h-7 text-sm flex-1"
+                          autoFocus
+                        />
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => saveEdit(sp.id)}>
+                          <Check className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={cancelEdit}>
+                          <X className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-sm flex-1 truncate">{sp.name}</span>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(sp.id, sp.name)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removePerson(sp.id, sp.name)}>
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
