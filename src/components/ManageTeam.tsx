@@ -60,6 +60,27 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       : [{ name: "", value: "", points: "1" }]
   );
 
+  // Re-sync local form state when props change (e.g. targets/phases load after first render or update elsewhere)
+  useEffect(() => {
+    if (teamTargets.length > 0) {
+      setMetrics(teamTargets.map((t) => ({ name: t.metric, value: String(t.target_value), points: String(t.points_per_unit) })));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targets]);
+
+  useEffect(() => {
+    setObjective(sessionObjective || "");
+  }, [sessionObjective]);
+
+  useEffect(() => {
+    if (sessionPhases && sessionPhases.length > 0) {
+      setPhases(sessionPhases.map(p => ({ name: p.name, duration: String(p.durationMinutes) })));
+    } else if (sessionDurationMinutes) {
+      setPhases([{ name: "Session", duration: String(sessionDurationMinutes) }]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionPhases, sessionDurationMinutes]);
+
   const addPerson = async () => {
     if (!newName.trim()) return;
     setLoading(true);
