@@ -78,7 +78,7 @@ export function Leaderboard({ salespeople, activityLogs, targets }: LeaderboardP
             {totals.length === 0 && (
               <tr>
                 <td colSpan={3 + metrics.length} className="p-6 text-center text-muted-foreground">
-                  No salespeople yet. Join the team!
+                  No salespeople yet. Click <span className="font-semibold text-foreground">Setup</span> in the top-right to add team members.
                 </td>
               </tr>
             )}
