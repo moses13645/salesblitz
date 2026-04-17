@@ -14,6 +14,14 @@ export function TeamProgress({ targets, activityLogs }: TeamProgressProps) {
     return acc;
   }, {});
 
+  if (metrics.length === 0) {
+    return (
+      <div className="rounded-lg bg-muted/40 border border-dashed border-border p-6 text-center">
+        <p className="text-sm text-muted-foreground">No targets defined yet. Click <span className="font-semibold text-foreground">Setup</span> in the top-right to configure session metrics.</p>
+      </div>
+    );
+  }
+
   return (
     <div className={`grid gap-4 ${metrics.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
       {metrics.map(({ key, label, icon: Icon, color }) => {
