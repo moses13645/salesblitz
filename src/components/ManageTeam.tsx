@@ -13,6 +13,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ManageTeamProps {
   buId: string;
@@ -30,6 +40,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [personToDelete, setPersonToDelete] = useState<{ id: string; name: string } | null>(null);
   const [objective, setObjective] = useState(sessionObjective || "");
   const [phases, setPhases] = useState<{ name: string; duration: string }[]>(() => {
     if (sessionPhases && sessionPhases.length > 0) {
@@ -87,7 +98,6 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
   };
 
   const removePerson = async (id: string, name: string) => {
-    if (!confirm(`Remove ${name}? Their activity logs will also be deleted.`)) return;
     await supabase.from("activity_logs").delete().eq("salesperson_id", id);
     await supabase.from("targets").delete().eq("salesperson_id", id);
     const { error } = await supabase.from("salespeople").delete().eq("id", id);
@@ -99,6 +109,7 @@ export function ManageTeam({ buId, sessionObjective, sessionDurationMinutes, ses
       qc.invalidateQueries({ queryKey: ["targets", buId] });
       toast({ title: `${name} removed` });
     }
+    setPersonToDelete(null);
   };
 
   const saveAll = async () => {
