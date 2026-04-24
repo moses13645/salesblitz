@@ -4,12 +4,12 @@ export type MetricDef = { key: string; label: string; icon: LucideIcon; color: s
 
 // Default suggestions when creating new metrics
 export const DEFAULT_METRICS: MetricDef[] = [
-  { key: "calls", label: "Calls", icon: Phone, color: "text-info" },
+  { key: "calls", label: "Calls", icon: Phone, color: "text-warning" },
   { key: "meetings", label: "Meetings", icon: Calendar, color: "text-warning" },
-  { key: "deals", label: "Deals", icon: Handshake, color: "text-success" },
+  { key: "deals", label: "Deals", icon: Handshake, color: "text-warning" },
 ];
 
-const COLORS = ["text-info", "text-warning", "text-success", "text-primary", "text-destructive"];
+const COLORS = ["text-warning", "text-warning", "text-warning", "text-warning", "text-warning"];
 
 /** Build metric definitions dynamically from targets. Falls back to defaults. */
 export function getMetricsFromTargets(
@@ -20,6 +20,6 @@ export function getMetricsFromTargets(
 
   return teamMetrics.map((key, i) => {
     const def = DEFAULT_METRICS.find((d) => d.key === key);
-    return def || { key, label: key, icon: Target, color: COLORS[i % COLORS.length] };
+    return { ...(def || { key, label: key, icon: Target }), color: COLORS[i % COLORS.length] };
   });
 }
