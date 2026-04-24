@@ -75,10 +75,10 @@ export default function BUDashboard() {
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {bu.session_objective ? (
-          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-start gap-3">
-            <Target className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+          <div className="rounded-lg bg-info/5 border border-info/20 p-4 flex items-start gap-3">
+            <Target className="h-5 w-5 text-info mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-medium text-primary mb-1">Session Objective</p>
+              <p className="text-xs font-medium text-info mb-1">Session Objective</p>
               <p className="text-sm text-foreground">{bu.session_objective}</p>
             </div>
           </div>
