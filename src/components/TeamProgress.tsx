@@ -49,7 +49,7 @@ export function TeamProgress({ targets, activityLogs }: TeamProgressProps) {
             {targetVal > 0 && (
               <div>
                 <Progress value={Math.min(pct, 100)} className="h-2 [&>div]:bg-success" />
-                <p className={`text-xs mt-1 ${pct >= 100 ? "text-primary font-semibold" : "text-muted-foreground"}`}>{Math.round(pct)}% of target</p>
+                <p className={`text-xs mt-1 ${pct >= 100 ? "text-success font-semibold" : "text-muted-foreground"}`}>{Math.round(pct)}% of target</p>
               </div>
             )}
           </div>
