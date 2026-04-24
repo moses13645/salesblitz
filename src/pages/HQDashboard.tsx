@@ -250,7 +250,7 @@ export default function HQDashboard() {
                             {m.current}
                             {m.target > 0 && <span className="text-xs font-normal text-muted-foreground"> /{m.target}</span>}
                           </p>
-                          {m.target > 0 && <Progress value={pct} className="h-1 mt-1" />}
+                          {m.target > 0 && <Progress value={pct} className="h-1 mt-1 [&>div]:bg-success" />}
                         </div>
                       );
                     })}
