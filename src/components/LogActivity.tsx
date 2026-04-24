@@ -113,7 +113,7 @@ export function LogActivity({ buId, salespeople, targets, activityLogs }: LogAct
                   key={m.key}
                   onClick={() => handleLog(m.key)}
                   disabled={loadingMetric === m.key}
-                  className="gap-1.5 bg-brand-blue text-white hover:bg-brand-blue/90 shadow-md font-semibold px-4"
+                  className="gap-1.5 bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-md font-semibold px-4"
                 >
                   <Plus className="h-4 w-4" strokeWidth={3} />
                   {m.label}
