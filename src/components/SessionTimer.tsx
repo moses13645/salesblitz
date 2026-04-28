@@ -39,28 +39,23 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
     return audioCtxRef.current;
   };
 
-  // Synthesized church-bell strike: inharmonic partials with long shimmering decay
-  const playBellStrike = (startAt: number, baseFreq = 440, velocity = 1) => {
+  // Short natural "ding": sharp attack, bright fundamental + light bell partials, quick decay
+  const playDing = (startAt: number, baseFreq = 880, velocity = 1) => {
     const ctx = getAudioCtx();
     if (!ctx) return;
+    const decay = 1.4;
     const master = ctx.createGain();
-    const decay = 4.5;
     master.gain.setValueAtTime(0.0001, startAt);
-    master.gain.exponentialRampToValueAtTime(0.9 * velocity, startAt + 0.005);
+    master.gain.exponentialRampToValueAtTime(0.7 * velocity, startAt + 0.003);
     master.gain.exponentialRampToValueAtTime(0.0001, startAt + decay);
     master.connect(ctx.destination);
 
-    // Classic inharmonic bell ratios (hum, prime, tierce, quint, nominal, upper)
+    // A few partials for a clean, natural bell-like "ding"
     const partials = [
-      { ratio: 0.5, g: 0.7, decay: decay },
-      { ratio: 1.0, g: 1.0, decay: decay * 0.9 },
-      { ratio: 1.2, g: 0.55, decay: decay * 0.75 },
-      { ratio: 1.5, g: 0.45, decay: decay * 0.6 },
-      { ratio: 2.0, g: 0.5, decay: decay * 0.5 },
-      { ratio: 2.5, g: 0.3, decay: decay * 0.4 },
-      { ratio: 3.0, g: 0.22, decay: decay * 0.3 },
-      { ratio: 4.2, g: 0.15, decay: decay * 0.25 },
-      { ratio: 5.4, g: 0.1, decay: decay * 0.2 },
+      { ratio: 1.0, g: 1.0, decay: decay },
+      { ratio: 2.0, g: 0.35, decay: decay * 0.7 },
+      { ratio: 3.0, g: 0.18, decay: decay * 0.5 },
+      { ratio: 4.2, g: 0.08, decay: decay * 0.35 },
     ];
     partials.forEach(({ ratio, g, decay: d }) => {
       const osc = ctx.createOscillator();
@@ -68,7 +63,7 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
       osc.frequency.setValueAtTime(baseFreq * ratio, startAt);
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.exponentialRampToValueAtTime(g, startAt + 0.005);
+      gain.gain.exponentialRampToValueAtTime(g, startAt + 0.003);
       gain.gain.exponentialRampToValueAtTime(0.0001, startAt + d);
       osc.connect(gain).connect(master);
       osc.start(startAt);
@@ -76,24 +71,14 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
     });
   };
 
-  // Joyful peal of bells: alternating pitches over several seconds
+  // "Ding ding ding" — three crisp bell strikes
   const playGong = () => {
     const ctx = getAudioCtx();
     if (!ctx) return;
     const now = ctx.currentTime;
-    // Alternating bell pitches (like a small carillon), ~8s total
-    const pattern: Array<{ t: number; f: number; v: number }> = [
-      { t: 0.0, f: 523, v: 1.0 },  // C5
-      { t: 0.45, f: 659, v: 0.95 }, // E5
-      { t: 0.9, f: 784, v: 1.0 },  // G5
-      { t: 1.35, f: 659, v: 0.9 },  // E5
-      { t: 1.8, f: 523, v: 0.95 }, // C5
-      { t: 2.25, f: 784, v: 1.0 }, // G5
-      { t: 2.7, f: 1047, v: 1.0 }, // C6
-      { t: 3.3, f: 784, v: 0.9 },  // G5
-      { t: 3.9, f: 523, v: 1.0 },  // C5 final
-    ];
-    pattern.forEach(({ t, f, v }) => playBellStrike(now + t, f, v));
+    playDing(now + 0.0, 880, 1.0);
+    playDing(now + 0.55, 880, 1.0);
+    playDing(now + 1.1, 880, 1.0);
   };
 
   // Determine active phase
