@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Timer, Play, Square, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,53 @@ interface SessionTimerProps {
 export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durationMinutes }: SessionTimerProps) {
   const [remaining, setRemaining] = useState<number | null>(null);
   const qc = useQueryClient();
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const playedStartRef = useRef<string | null>(null);
+  const playedEndRef = useRef<string | null>(null);
+
+  const getAudioCtx = () => {
+    if (typeof window === "undefined") return null;
+    if (!audioCtxRef.current) {
+      const AC = (window.AudioContext || (window as any).webkitAudioContext);
+      if (!AC) return null;
+      audioCtxRef.current = new AC();
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume().catch(() => {});
+    }
+    return audioCtxRef.current;
+  };
+
+  // Synthesized gong: layered sine partials with long decay
+  const playGong = () => {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.9, now + 0.02);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
+    master.connect(ctx.destination);
+
+    const partials = [
+      { f: 110, g: 1.0 },
+      { f: 220, g: 0.6 },
+      { f: 277, g: 0.35 },
+      { f: 440, g: 0.25 },
+      { f: 660, g: 0.15 },
+    ];
+    partials.forEach(({ f, g }) => {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f, now);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(g, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+      osc.connect(gain).connect(master);
+      osc.start(now);
+      osc.stop(now + 3.5);
+    });
+  };
 
   // Determine active phase
   const activePhases = useMemo(() => {
@@ -56,6 +103,9 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
   }, [startedAt, currentPhase, isRunning]);
 
   const startTimer = async () => {
+    // Prime audio context inside the user gesture so subsequent gongs can play
+    getAudioCtx();
+    playGong();
     await supabase
       .from("business_units")
       .update({
@@ -77,6 +127,8 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
   const nextPhase = async () => {
     if (!activePhases || isLastPhase) return;
     const next = currentPhaseIndex + 1;
+    getAudioCtx();
+    playGong();
     await supabase
       .from("business_units")
       .update({
@@ -106,7 +158,36 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
   const phaseDuration = currentPhase ? currentPhase.durationMinutes * 60 : 1;
   const pct = isRunning ? Math.max(0, (remaining ?? 0) / phaseDuration) * 100 : 100;
 
+  // Identifier unique pour cette phase active (évite de rejouer le gong)
+  const phaseKey = startedAt ? `${startedAt}:${currentPhaseIndex}` : null;
+
+  // Joue le gong de fin une seule fois quand le décompte atteint 0
+  useEffect(() => {
+    if (isExpired && phaseKey && playedEndRef.current !== phaseKey) {
+      playedEndRef.current = phaseKey;
+      playGong();
+    }
+  }, [isExpired, phaseKey]);
+
+  // Affiche le décompte plein écran sur les 10 dernières secondes
+  const showCountdown = isRunning && remaining !== null && remaining > 0 && remaining <= 10;
+
   return (
+    <>
+      {showCountdown && (
+        <div className="fixed inset-0 z-50 bg-background/85 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-none">
+          <p className="font-display text-sm uppercase tracking-[0.3em] text-muted-foreground mb-4">
+            {currentPhase?.name} ends in
+          </p>
+          <div
+            key={remaining}
+            className="font-display font-bold text-[14rem] leading-none text-primary animate-scale-in tabular-nums"
+            style={{ textShadow: "0 0 80px hsl(var(--primary) / 0.4)" }}
+          >
+            {remaining}
+          </div>
+        </div>
+      )}
     <div className="flex items-center gap-2">
       {/* Phase indicator pills */}
       {activePhases.length > 1 && (
@@ -175,5 +256,6 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
         )}
       </div>
     </div>
+    </>
   );
 }
