@@ -150,6 +150,18 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
     qc.invalidateQueries({ queryKey: ["bu"] });
   };
 
+  // Identifier unique pour cette phase active + détection de fin (hooks déclarés AVANT tout return)
+  const phaseKey = startedAt ? `${startedAt}:${currentPhaseIndex}` : null;
+  const endReached =
+    !!currentPhase && !!startedAt && remaining === 0;
+
+  useEffect(() => {
+    if (endReached && phaseKey && playedEndRef.current !== phaseKey) {
+      playedEndRef.current = phaseKey;
+      playGong();
+    }
+  }, [endReached, phaseKey]);
+
   if (!activePhases || activePhases.length === 0) return null;
 
   const mins = Math.floor((remaining ?? 0) / 60);
@@ -157,17 +169,6 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
   const isExpired = remaining === 0 && isRunning;
   const phaseDuration = currentPhase ? currentPhase.durationMinutes * 60 : 1;
   const pct = isRunning ? Math.max(0, (remaining ?? 0) / phaseDuration) * 100 : 100;
-
-  // Identifier unique pour cette phase active (évite de rejouer le gong)
-  const phaseKey = startedAt ? `${startedAt}:${currentPhaseIndex}` : null;
-
-  // Joue le gong de fin une seule fois quand le décompte atteint 0
-  useEffect(() => {
-    if (isExpired && phaseKey && playedEndRef.current !== phaseKey) {
-      playedEndRef.current = phaseKey;
-      playGong();
-    }
-  }, [isExpired, phaseKey]);
 
   // Affiche le décompte plein écran sur les 10 dernières secondes
   const showCountdown = isRunning && remaining !== null && remaining > 0 && remaining <= 10;
