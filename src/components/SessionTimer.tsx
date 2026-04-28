@@ -39,35 +39,61 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
     return audioCtxRef.current;
   };
 
-  // Synthesized gong: layered sine partials with long decay
+  // Synthesized church-bell strike: inharmonic partials with long shimmering decay
+  const playBellStrike = (startAt: number, baseFreq = 440, velocity = 1) => {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const master = ctx.createGain();
+    const decay = 4.5;
+    master.gain.setValueAtTime(0.0001, startAt);
+    master.gain.exponentialRampToValueAtTime(0.9 * velocity, startAt + 0.005);
+    master.gain.exponentialRampToValueAtTime(0.0001, startAt + decay);
+    master.connect(ctx.destination);
+
+    // Classic inharmonic bell ratios (hum, prime, tierce, quint, nominal, upper)
+    const partials = [
+      { ratio: 0.5, g: 0.7, decay: decay },
+      { ratio: 1.0, g: 1.0, decay: decay * 0.9 },
+      { ratio: 1.2, g: 0.55, decay: decay * 0.75 },
+      { ratio: 1.5, g: 0.45, decay: decay * 0.6 },
+      { ratio: 2.0, g: 0.5, decay: decay * 0.5 },
+      { ratio: 2.5, g: 0.3, decay: decay * 0.4 },
+      { ratio: 3.0, g: 0.22, decay: decay * 0.3 },
+      { ratio: 4.2, g: 0.15, decay: decay * 0.25 },
+      { ratio: 5.4, g: 0.1, decay: decay * 0.2 },
+    ];
+    partials.forEach(({ ratio, g, decay: d }) => {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(baseFreq * ratio, startAt);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(g, startAt + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + d);
+      osc.connect(gain).connect(master);
+      osc.start(startAt);
+      osc.stop(startAt + d + 0.05);
+    });
+  };
+
+  // Joyful peal of bells: alternating pitches over several seconds
   const playGong = () => {
     const ctx = getAudioCtx();
     if (!ctx) return;
     const now = ctx.currentTime;
-    const master = ctx.createGain();
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.9, now + 0.02);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
-    master.connect(ctx.destination);
-
-    const partials = [
-      { f: 110, g: 1.0 },
-      { f: 220, g: 0.6 },
-      { f: 277, g: 0.35 },
-      { f: 440, g: 0.25 },
-      { f: 660, g: 0.15 },
+    // Alternating bell pitches (like a small carillon), ~8s total
+    const pattern: Array<{ t: number; f: number; v: number }> = [
+      { t: 0.0, f: 523, v: 1.0 },  // C5
+      { t: 0.45, f: 659, v: 0.95 }, // E5
+      { t: 0.9, f: 784, v: 1.0 },  // G5
+      { t: 1.35, f: 659, v: 0.9 },  // E5
+      { t: 1.8, f: 523, v: 0.95 }, // C5
+      { t: 2.25, f: 784, v: 1.0 }, // G5
+      { t: 2.7, f: 1047, v: 1.0 }, // C6
+      { t: 3.3, f: 784, v: 0.9 },  // G5
+      { t: 3.9, f: 523, v: 1.0 },  // C5 final
     ];
-    partials.forEach(({ f, g }) => {
-      const osc = ctx.createOscillator();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(f, now);
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(g, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
-      osc.connect(gain).connect(master);
-      osc.start(now);
-      osc.stop(now + 3.5);
-    });
+    pattern.forEach(({ t, f, v }) => playBellStrike(now + t, f, v));
   };
 
   // Determine active phase
