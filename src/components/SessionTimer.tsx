@@ -22,64 +22,9 @@ interface SessionTimerProps {
 export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durationMinutes }: SessionTimerProps) {
   const [remaining, setRemaining] = useState<number | null>(null);
   const qc = useQueryClient();
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const playedStartRef = useRef<string | null>(null);
   const playedEndRef = useRef<string | null>(null);
 
-  const getAudioCtx = () => {
-    if (typeof window === "undefined") return null;
-    if (!audioCtxRef.current) {
-      const AC = (window.AudioContext || (window as any).webkitAudioContext);
-      if (!AC) return null;
-      audioCtxRef.current = new AC();
-    }
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume().catch(() => {});
-    }
-    return audioCtxRef.current;
-  };
-
-  // Short natural "ding": sharp attack, bright fundamental + light bell partials, quick decay
-  const playDing = (startAt: number, baseFreq = 880, velocity = 1) => {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const decay = 1.4;
-    const master = ctx.createGain();
-    master.gain.setValueAtTime(0.0001, startAt);
-    master.gain.exponentialRampToValueAtTime(0.7 * velocity, startAt + 0.003);
-    master.gain.exponentialRampToValueAtTime(0.0001, startAt + decay);
-    master.connect(ctx.destination);
-
-    // A few partials for a clean, natural bell-like "ding"
-    const partials = [
-      { ratio: 1.0, g: 1.0, decay: decay },
-      { ratio: 2.0, g: 0.35, decay: decay * 0.7 },
-      { ratio: 3.0, g: 0.18, decay: decay * 0.5 },
-      { ratio: 4.2, g: 0.08, decay: decay * 0.35 },
-    ];
-    partials.forEach(({ ratio, g, decay: d }) => {
-      const osc = ctx.createOscillator();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(baseFreq * ratio, startAt);
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.exponentialRampToValueAtTime(g, startAt + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + d);
-      osc.connect(gain).connect(master);
-      osc.start(startAt);
-      osc.stop(startAt + d + 0.05);
-    });
-  };
-
-  // "Ding ding ding" — three crisp bell strikes
-  const playGong = () => {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    playDing(now + 0.0, 880, 1.0);
-    playDing(now + 0.55, 880, 1.0);
-    playDing(now + 1.1, 880, 1.0);
-  };
 
   // Determine active phase
   const activePhases = useMemo(() => {
@@ -114,9 +59,6 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
   }, [startedAt, currentPhase, isRunning]);
 
   const startTimer = async () => {
-    // Prime audio context inside the user gesture so subsequent gongs can play
-    getAudioCtx();
-    playGong();
     await supabase
       .from("business_units")
       .update({
@@ -138,8 +80,6 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
   const nextPhase = async () => {
     if (!activePhases || isLastPhase) return;
     const next = currentPhaseIndex + 1;
-    getAudioCtx();
-    playGong();
     await supabase
       .from("business_units")
       .update({
@@ -167,9 +107,8 @@ export function SessionTimer({ buId, phases, currentPhaseIndex, startedAt, durat
     !!currentPhase && !!startedAt && remaining === 0;
 
   useEffect(() => {
-    if (endReached && phaseKey && playedEndRef.current !== phaseKey) {
+    if (endReached && phaseKey) {
       playedEndRef.current = phaseKey;
-      playGong();
     }
   }, [endReached, phaseKey]);
 
