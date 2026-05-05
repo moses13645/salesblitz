@@ -15,7 +15,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/salesblitz">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/bu/:slug" element={<BUDashboard />} />
