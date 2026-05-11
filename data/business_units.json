@@ -1,0 +1,257 @@
+[
+    {
+        "id": "e6c93224-dba7-45e9-842d-56db24d54e59",
+        "name": "BL España",
+        "slug": "bl-espa-a",
+        "created_at": "2026-04-15T11:37:37.087794+00:00",
+        "session_objective": "Sales Blitz BL España NEXT\n100 nuevas oportunidades NEXT",
+        "session_duration_minutes": 240,
+        "session_started_at": null,
+        "session_phases": [
+            {
+                "name": "Presentación",
+                "durationMinutes": 15
+            },
+            {
+                "name": "Primera ronda de llamadas",
+                "durationMinutes": 85
+            },
+            {
+                "name": "Break para recoger y compartir feedback",
+                "durationMinutes": 30
+            },
+            {
+                "name": "Segunda ronda de llamadas",
+                "durationMinutes": 85
+            },
+            {
+                "name": "Feedback final, cierre y entrega de premios",
+                "durationMinutes": 25
+            }
+        ],
+        "current_phase_index": 4
+    },
+    {
+        "id": "de4fd215-10a2-4037-a0ba-ceb4c91bf47e",
+        "name": "BL España - eAdmin",
+        "slug": "bl-espa-a-eadmin",
+        "created_at": "2026-04-28T10:54:20.775472+00:00",
+        "session_objective": "Gestionar los leads existentes, generar nuevos leads y encontrar posibles clientes piloto",
+        "session_duration_minutes": 130,
+        "session_started_at": "2026-05-05T08:35:28.977+00:00",
+        "session_phases": [
+            {
+                "name": "Intro",
+                "durationMinutes": 10
+            },
+            {
+                "name": "Nueva eAdmin",
+                "durationMinutes": 120
+            }
+        ],
+        "current_phase_index": 0
+    },
+    {
+        "id": "0aee954a-2675-4ef9-9157-cdf93d1a55f7",
+        "name": "BL Tech",
+        "slug": "bl-tech",
+        "created_at": "2026-04-21T14:49:12.545211+00:00",
+        "session_objective": "👉 Générer un maximum de rendez-vous pour booster notre pipe sur mai / juin",
+        "session_duration_minutes": 75,
+        "session_started_at": "2026-04-23T14:02:59.773+00:00",
+        "session_phases": [
+            {
+                "name": "Sprint 2",
+                "durationMinutes": 75
+            }
+        ],
+        "current_phase_index": 1
+    },
+    {
+        "id": "6ee7ba5d-9fbf-4123-8fd5-f0e7611869a8",
+        "name": "Canada",
+        "slug": "canada",
+        "created_at": "2026-04-15T11:39:43.674719+00:00",
+        "session_objective": "25 migrations focused outreach attemps \n15 actual conversations \n8 qualified migration discussion \n6 follow meetings booked \n3 concrete migration opportunity (proposal or verbal commitment",
+        "session_duration_minutes": 240,
+        "session_started_at": null,
+        "session_phases": [
+            {
+                "name": "Kick off",
+                "durationMinutes": 15
+            },
+            {
+                "name": "Session 1",
+                "durationMinutes": 90
+            },
+            {
+                "name": "Check point",
+                "durationMinutes": 15
+            },
+            {
+                "name": "Sprint 2",
+                "durationMinutes": 90
+            },
+            {
+                "name": "Debrief",
+                "durationMinutes": 30
+            }
+        ],
+        "current_phase_index": 0
+    },
+    {
+        "id": "60169e15-9425-4522-a95f-cbcffa21aa39",
+        "name": "CARL",
+        "slug": "carl",
+        "created_at": "2026-04-15T11:37:49.031582+00:00",
+        "session_objective": "Target clients: currently stalled cases, Tiphaine’s OnPremise portfolio, clients for whom no action has yet been initiated\nClients to exclude: strategic clients",
+        "session_duration_minutes": 240,
+        "session_started_at": null,
+        "session_phases": [
+            {
+                "name": "Session 1",
+                "durationMinutes": 90
+            },
+            {
+                "name": "Synchro",
+                "durationMinutes": 30
+            },
+            {
+                "name": "Session 2",
+                "durationMinutes": 90
+            },
+            {
+                "name": "Debrief",
+                "durationMinutes": 30
+            }
+        ],
+        "current_phase_index": 0
+    },
+    {
+        "id": "368a2489-82b5-4048-9112-623557014190",
+        "name": "Collectivités territoriales",
+        "slug": "collectivit-s-territoriales",
+        "created_at": "2026-04-15T11:39:13.595543+00:00",
+        "session_objective": "👉 Générer des rendez-vous (équipe ATAL, AM/KAM WESEDIT) ou accélérer le closing (équipe SDR)",
+        "session_duration_minutes": 230,
+        "session_started_at": null,
+        "session_phases": [
+            {
+                "name": "Coup d'envoi",
+                "durationMinutes": 15
+            },
+            {
+                "name": "Sprint 1",
+                "durationMinutes": 90
+            },
+            {
+                "name": "Pause",
+                "durationMinutes": 20
+            },
+            {
+                "name": "Sprint 2",
+                "durationMinutes": 75
+            },
+            {
+                "name": "Débriefing",
+                "durationMinutes": 30
+            }
+        ],
+        "current_phase_index": 0
+    },
+    {
+        "id": "b7bce22a-4a5b-4c81-9bd0-64d07c0cb95d",
+        "name": "Editech - Documents",
+        "slug": "editech-documents",
+        "created_at": "2026-04-15T12:13:34.727785+00:00",
+        "session_objective": "Accelerate new pipe creation from mairies (repeat orders for Urba & Etat Civil)",
+        "session_duration_minutes": 285,
+        "session_started_at": null,
+        "session_phases": [
+            {
+                "name": "Sprint 1",
+                "durationMinutes": 120
+            },
+            {
+                "name": "Session Debrief",
+                "durationMinutes": 15
+            },
+            {
+                "name": "Sprint 2",
+                "durationMinutes": 120
+            },
+            {
+                "name": "Full Debrief",
+                "durationMinutes": 30
+            }
+        ],
+        "current_phase_index": 0
+    },
+    {
+        "id": "a6004fe1-d24b-4ab3-8040-790826fde045",
+        "name": "SMS",
+        "slug": "sms",
+        "created_at": "2026-04-15T11:37:43.908516+00:00",
+        "session_objective": "👉 Générer des rendez-vous ou accélérer le closing sur les migrations BL Resident OP vers le SaaS",
+        "session_duration_minutes": 230,
+        "session_started_at": null,
+        "session_phases": [
+            {
+                "name": "Coup d'envoi",
+                "durationMinutes": 15
+            },
+            {
+                "name": "Sprint 1",
+                "durationMinutes": 90
+            },
+            {
+                "name": "BREAK",
+                "durationMinutes": 20
+            },
+            {
+                "name": "Sprint 2",
+                "durationMinutes": 75
+            },
+            {
+                "name": "Débriefing",
+                "durationMinutes": 30
+            }
+        ],
+        "current_phase_index": 0
+    },
+    {
+        "id": "ea8199cf-356a-4c15-9c01-c7d279f4f6b5",
+        "name": "Test BU",
+        "slug": "test-bu",
+        "created_at": "2026-04-15T09:56:36.879658+00:00",
+        "session_objective": "Win back inactive clients",
+        "session_duration_minutes": 3,
+        "session_started_at": "2026-04-28T09:40:36.802+00:00",
+        "session_phases": [
+            {
+                "name": "Session 1",
+                "durationMinutes": 1
+            },
+            {
+                "name": "Checkpoint",
+                "durationMinutes": 1
+            },
+            {
+                "name": "Session 2",
+                "durationMinutes": 1
+            }
+        ],
+        "current_phase_index": 2
+    },
+    {
+        "id": "63f5c5ae-09df-4791-a1dd-49691a91fb63",
+        "name": "xxxxxxxx",
+        "slug": "xxxxxxxx",
+        "created_at": "2026-04-24T14:16:38.782552+00:00",
+        "session_objective": null,
+        "session_duration_minutes": null,
+        "session_started_at": null,
+        "session_phases": null,
+        "current_phase_index": 0
+    }
+]
